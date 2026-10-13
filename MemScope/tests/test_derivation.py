@@ -86,6 +86,30 @@ def test_composition_context_mismatch_rejected(store: InMemoryStore, issuer: Tok
     assert "composition" in result.reason
 
 
+def test_missing_parent_rejected(store: InMemoryStore, issuer: TokenIssuer) -> None:
+    _, _, token, meet_label = _setup(store, issuer)
+    proposal = DerivationProposal("d7", "Tuesday 10 AM", ("p1", "ghost"), meet_label, "extractive")
+    result = admit_derivation(store, issuer, [token], proposal, "assistant.pkg", 20.0)
+    assert result.status == "REJECT"
+    assert "missing" in result.reason
+
+
+def test_stale_parent_version_rejected(store: InMemoryStore, issuer: TokenIssuer) -> None:
+    p1, p2, token, meet_label = _setup(store, issuer)
+    proposal = DerivationProposal(
+        "d8",
+        "Tuesday 10 AM",
+        ("p1", "p2"),
+        meet_label,
+        "extractive",
+        {"p1": p1.version + 1, "p2": p2.version},
+        {"p1": p1.integrity_digest, "p2": p2.integrity_digest},
+    )
+    result = admit_derivation(store, issuer, [token], proposal, "assistant.pkg", 20.0)
+    assert result.status == "REJECT"
+    assert "stale" in result.reason
+
+
 def test_disjoint_tool_composition_quarantines(store: InMemoryStore, issuer: TokenIssuer) -> None:
     """Appendix scheduling example: two tokens, disjoint tools, empty required scope."""
 

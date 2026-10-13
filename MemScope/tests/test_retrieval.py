@@ -1,11 +1,13 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import pytest
 from conftest import make_context, make_item, make_label
 
+from memscope.data.schemas import MemoryItem
 from memscope.methods.retrieval import MemScopeService, PolicyChurnError, RetrievalDenied
 from memscope.methods.store import InMemoryStore
 from memscope.methods.tokens import TokenIssuer
+from memscope.models.ranking import Ranker
 
 
 def _scripted_clock(ticks: list[float]) -> Callable[[], float]:
@@ -89,3 +91,19 @@ def test_release_time_expiry_race_fails_closed(store: InMemoryStore, issuer: Tok
     )
     with pytest.raises(PolicyChurnError):
         service.retrieve(token, "calendar", 5, "assistant.pkg", ("calendar.read",))
+
+
+class _ExplodingRanker(Ranker):
+    def rank(self, query: str, items: Sequence[MemoryItem], k: int) -> list[MemoryItem]:
+        raise RuntimeError("ranker failure")
+
+
+def test_ranker_exception_fails_explicitly(store: InMemoryStore, issuer: TokenIssuer) -> None:
+    """A ranker exception must surface as an explicit failure, never a silent release."""
+
+    store.commit(make_item("m1", "calendar meeting"))
+    token = issuer.issue(make_context(), 30.0, store.policy_epoch)
+    service = MemScopeService(store, issuer, ranker=_ExplodingRanker(), clock=lambda: 20.0)
+    with pytest.raises(RuntimeError, match="ranker failure"):
+        service.retrieve(token, "calendar", 5, "assistant.pkg", ("calendar.read",))
+    assert store.audit_events() == ()

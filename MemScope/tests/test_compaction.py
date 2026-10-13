@@ -41,3 +41,20 @@ def test_exact_oracle_respects_budget() -> None:
         make_item("b", "b", future_utility=1.0, size_bytes=5),
     ]
     assert exact_knapsack_oracle(items, 5, EvictionWeights()) == {"a"}
+
+
+def test_compaction_restart_is_idempotent(store: InMemoryStore) -> None:
+    """Offline proxy for a reboot during compaction: rerunning converges and preserves pinned items."""
+
+    store.commit(make_item("expired", "old", label=make_label(expires_at=19.0)))
+    store.commit(make_item("pinned", "critical", hard_pinned=True, size_bytes=10))
+    store.commit(make_item("ordinary", "o", future_utility=0.1, size_bytes=10))
+
+    first = policy_aware_compact(store, 20, 20.0)
+    assert first.expired_or_revoked == ("expired",)
+    assert "pinned" in first.retained
+
+    second = policy_aware_compact(store, 20, 20.0)
+    assert second.expired_or_revoked == ()
+    assert second.evicted == ()
+    assert set(second.retained) == set(first.retained)

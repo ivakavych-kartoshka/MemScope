@@ -62,7 +62,7 @@ The harness also runs the paper's Section 11.6 negative controls (shadow cache, 
 
 ## Verification
 
-Local gate: `pytest -q`, `ruff check .`, and `mypy .` (strict, package and full tree). A GitHub Actions workflow (`.github/workflows/ci.yml`) runs the same three gates on Python 3.11 and 3.12; a remote green run must be confirmed before any CI pass is claimed. Tests include a final-check freshness race (`test_release_time_expiry_race_fails_closed`) and a randomized multi-token composition property (Theorem 2 non-widening).
+Local gate: `pytest -q`, `ruff check .`, and `mypy .` (strict, package and full tree). A GitHub Actions workflow (`.github/workflows/ci.yml`) runs the same three gates on Python 3.11 and 3.12; a remote green run must be confirmed before any CI pass is claimed. Tests include a final-check freshness race (`test_release_time_expiry_race_fails_closed`) and a randomized multi-token composition property (Theorem 2 non-widening), plus the appendix security-test-suite scenarios (token field mutation, nonce replay, swapped package binding, unregistered tools, child-token attenuation, expiry/epoch races, wall-clock rollback, label/provenance tampering, missing/stale parents, broadened derived labels, index-projection bypass, ranker exceptions, bounded audit-partition exhaustion, pinned-storage exhaustion, restart-during-compaction consistency, and the shadow-store bypass).
 
 ## Implemented algorithms
 
@@ -73,7 +73,7 @@ Local gate: `pytest -q`, `ruff check .`, and `mypy .` (strict, package and full 
 - Direct observation writes and source-cited derivation admission with a multi-token composition principal, label meet, version/digest checks, and quarantine.
 - Extractive/structured attribution verifier plus an explicit test-only always-accept negative control.
 - Expiry/revocation-first greedy compaction and a small exact knapsack evaluation oracle.
-- Content-free audit events and tombstone digests.
+- Content-free audit events (optionally bounded, failing closed when the partition is full) and tombstone digests.
 
 ## Metrics and statistics
 

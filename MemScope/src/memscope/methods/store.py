@@ -9,10 +9,17 @@ from dataclasses import replace
 from ..data.schemas import AuditEvent, ItemState, MemoryItem
 
 
+class AuditPartitionFull(RuntimeError):
+    """Raised when the bounded audit partition cannot accept another event."""
+
+
 class InMemoryStore:
-    def __init__(self) -> None:
+    def __init__(self, audit_capacity: int | None = None) -> None:
+        if audit_capacity is not None and audit_capacity < 0:
+            raise ValueError("audit capacity must be non-negative")
         self._items: dict[str, MemoryItem] = {}
         self._audit: list[AuditEvent] = []
+        self._audit_capacity = audit_capacity
         self._tombstones: dict[str, str] = {}
         self._epoch = 1
         self._lock = threading.RLock()
@@ -79,6 +86,10 @@ class InMemoryStore:
 
     def append_audit(self, event: AuditEvent) -> None:
         with self._lock:
+            if self._audit_capacity is not None and len(self._audit) >= self._audit_capacity:
+                raise AuditPartitionFull(
+                    f"audit partition is full ({self._audit_capacity} events)"
+                )
             self._audit.append(event)
 
     def audit_events(self) -> tuple[AuditEvent, ...]:
