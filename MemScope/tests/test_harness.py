@@ -46,10 +46,15 @@ def test_harness_enforcement_matches_policy_oracle(tmp_path: Path) -> None:
         assert rq1[baseline]["queries_with_violation"] > 0
 
 
-def test_harness_utility_recall_is_perfect_under_policy(tmp_path: Path) -> None:
+def test_harness_utility_recall_tracks_scope_and_k(tmp_path: Path) -> None:
     result = run_harness(_config(tmp_path, seeds=[7]), tmp_path / "out")
-    for recall in result["rq2_utility"].values():
-        assert recall["entitled_recall_at_k_mean"] == 1.0
+    utility = result["rq2_utility"]
+    recalls = utility["entitled_recall_at_k"]
+    assert recalls["w1_k1"]["entitled_recall_at_k_mean"] == 1.0
+    assert recalls["w2_k1"]["entitled_recall_at_k_mean"] < 1.0
+    assert recalls["w3_k1"]["entitled_recall_at_k_mean"] < recalls["w2_k1"]["entitled_recall_at_k_mean"]
+    for width in utility["scope_widths"]:
+        assert recalls[f"w{width}_k5"]["entitled_recall_at_k_mean"] == 1.0
 
 
 def test_harness_lifecycle_fails_closed(tmp_path: Path) -> None:
@@ -57,14 +62,27 @@ def test_harness_lifecycle_fails_closed(tmp_path: Path) -> None:
     lifecycle = result["rq4_lifecycle"]
     assert lifecycle["post_expiry_releases_total"] == 0
     assert lifecycle["epoch_change_denials"] == lifecycle["epoch_change_trials"] == 3
+    assert lifecycle["revoked_items_returned_total"] == 0
+    assert lifecycle["revocation_trials"] == 3
+    assert lifecycle["ttl_allowed_before_expiry"] == lifecycle["ttl_trials"] == 3
+    assert lifecycle["ttl_returned_at_expiry"] == 0
 
 
 def test_harness_derivation_blocks_laundering(tmp_path: Path) -> None:
     result = run_harness(_config(tmp_path, seeds=[7]), tmp_path / "out")
     derivation = result["rq3_derivation"]
     assert derivation["admitted"]["faithful"] == derivation["cases"]["faithful"]
-    assert derivation["admitted"]["laundering"] == 0
-    assert derivation["admitted"]["unsupported"] == 0
+    for kind in (
+        "unsupported",
+        "laundering",
+        "cross_scope",
+        "stale_parent",
+        "expired_parent",
+        "composition_mismatch",
+        "composition_disjoint_tools",
+    ):
+        assert kind in derivation["cases"]
+        assert derivation["admitted"][kind] == 0
     assert derivation["false_acceptance_rate"] == 0.0
     assert derivation["false_rejection_rate"] == 0.0
 

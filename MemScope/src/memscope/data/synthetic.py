@@ -183,19 +183,22 @@ class WorkloadConfig:
     apps: int = 3
     topics_per_app: int = 4
     decoys_per_topic: int = 2
+    entitled_per_topic: int = 1
     now: float = 1000.0
 
     def __post_init__(self) -> None:
         if self.apps < 1 or self.topics_per_app < 1 or self.decoys_per_topic < 1:
             raise ValueError("workload dimensions must be positive")
+        if self.entitled_per_topic < 1:
+            raise ValueError("entitled_per_topic must be positive")
         if not isfinite(self.now):
             raise ValueError("workload clock must be finite")
 
     @property
     def group_size(self) -> int:
-        """Relevant items per topic: one entitled item plus its decoys."""
+        """Relevant items per topic: entitled items plus their decoys."""
 
-        return 1 + self.decoys_per_topic
+        return self.entitled_per_topic + self.decoys_per_topic
 
 
 _TOPIC_PURPOSES: tuple[str, ...] = (
@@ -301,11 +304,12 @@ def _relevance_tokens(text: str) -> frozenset[str]:
 def generate_scaled_scenario(config: WorkloadConfig | None = None) -> SyntheticScenario:
     """Build a deterministic multi-app workload with a per-query policy oracle.
 
-    Every topic contributes one entitled item (authorized and relevant) and
-    ``decoys_per_topic`` relevant-but-unauthorized items spanning four failure
-    modes: wrong purpose, wrong tool, expired, and not-yet-valid. ``k`` is set to
-    the topic group size so an unscoped ranker surfaces the full group, letting
-    the harness measure out-of-scope retrieval deterministically.
+    Every topic contributes ``entitled_per_topic`` entitled items (authorized and
+    relevant) and ``decoys_per_topic`` relevant-but-unauthorized items spanning
+    four failure modes: wrong purpose, wrong tool, expired, and not-yet-valid.
+    ``k`` is set to the topic group size so an unscoped ranker surfaces the full
+    group, letting the harness measure out-of-scope retrieval deterministically.
+    Varying ``entitled_per_topic`` changes the scope width for the RQ2 sweep.
     """
 
     cfg = config or WorkloadConfig()
@@ -325,23 +329,28 @@ def generate_scaled_scenario(config: WorkloadConfig | None = None) -> SyntheticS
             token = f"topic{app_index}x{topic_index}"
             group: list[MemoryItem] = []
 
-            entitled_id = f"entitled_a{app_index}_t{topic_index}"
-            group.append(
-                _workload_item(
-                    entitled_id,
-                    f"{token} {purpose} synthetic reference note {suffix}",
-                    app=app,
-                    consumer=consumer,
-                    namespace=namespace,
-                    purposes=[purpose],
-                    tools=[tool],
-                    sensitivity=sensitivity,
-                    not_before=now - 50.0,
-                    expires_at=now + 200.0,
-                    safety=sensitivity >= Sensitivity.SENSITIVE,
-                    utility=1.0,
+            for entitled_index in range(cfg.entitled_per_topic):
+                entitled_id = (
+                    f"entitled_a{app_index}_t{topic_index}"
+                    if entitled_index == 0
+                    else f"entitled_a{app_index}_t{topic_index}_e{entitled_index}"
                 )
-            )
+                group.append(
+                    _workload_item(
+                        entitled_id,
+                        f"{token} {purpose} synthetic reference note {entitled_index} {suffix}",
+                        app=app,
+                        consumer=consumer,
+                        namespace=namespace,
+                        purposes=[purpose],
+                        tools=[tool],
+                        sensitivity=sensitivity,
+                        not_before=now - 50.0,
+                        expires_at=now + 200.0,
+                        safety=sensitivity >= Sensitivity.SENSITIVE,
+                        utility=1.0,
+                    )
+                )
 
             for decoy_index in range(cfg.decoys_per_topic):
                 decoy_id = f"decoy_a{app_index}_t{topic_index}_d{decoy_index}"

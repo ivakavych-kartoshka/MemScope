@@ -77,12 +77,14 @@ def _rq1_table(summary: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
 
 
 def _rq2_table(summary: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
-    header = ["k", "entitled_recall_at_k_mean", "ci95_low", "ci95_high"]
+    utility = summary["rq2_utility"]
+    header = ["scope_width", "k", "entitled_recall_at_k_mean", "ci95_low", "ci95_high"]
     rows: list[list[Any]] = []
-    for key in sorted(summary["rq2_utility"], key=int):
-        entry = summary["rq2_utility"][key]
-        low, high = entry["entitled_recall_at_k_ci95"]
-        rows.append([key, entry["entitled_recall_at_k_mean"], low, high])
+    for width in utility["scope_widths"]:
+        for k in utility["k_sweep"]:
+            entry = utility["entitled_recall_at_k"][f"w{width}_k{k}"]
+            low, high = entry["entitled_recall_at_k_ci95"]
+            rows.append([width, k, entry["entitled_recall_at_k_mean"], low, high])
     return header, rows
 
 
@@ -90,7 +92,7 @@ def _rq3_table(summary: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
     derivation = summary["rq3_derivation"]
     header = ["kind", "cases", "admitted", "accept_rate"]
     rows: list[list[Any]] = []
-    for kind in ("faithful", "unsupported", "laundering"):
+    for kind in derivation["kinds"]:
         cases = derivation["cases"][kind]
         admitted = derivation["admitted"][kind]
         rows.append([kind, cases, admitted, admitted / cases if cases else 0.0])
@@ -192,14 +194,20 @@ def _plot_rq2(summary: dict[str, Any], figures_dir: Path) -> list[Path]:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    ks = sorted(int(key) for key in summary["rq2_utility"])
-    recalls = [summary["rq2_utility"][str(key)]["entitled_recall_at_k_mean"] for key in ks]
+    utility = summary["rq2_utility"]
+    ks = utility["k_sweep"]
     fig, axis = plt.subplots(figsize=(6, 4))
-    axis.plot(ks, recalls, marker="o", color="#2f6f9f")
+    for width in utility["scope_widths"]:
+        recalls = [
+            utility["entitled_recall_at_k"][f"w{width}_k{k}"]["entitled_recall_at_k_mean"]
+            for k in ks
+        ]
+        axis.plot(ks, recalls, marker="o", label=f"scope width {width}")
     axis.set_ylim(0, 1.05)
     axis.set_xlabel("k")
     axis.set_ylabel("entitled Recall@k")
-    axis.set_title("RQ2 entitled recall vs k")
+    axis.set_title("RQ2 entitled recall vs k by scope width")
+    axis.legend()
     axis.grid(alpha=0.25)
     fig.suptitle(str(summary["notice"]), fontsize=8)
     fig.tight_layout()

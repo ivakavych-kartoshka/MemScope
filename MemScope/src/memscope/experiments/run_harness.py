@@ -17,6 +17,7 @@ from typing import Any
 from ..baselines.simple import NamespaceBaseline, PromptOnlyBaseline, UnscopedBaseline
 from ..data.schemas import (
     DerivationProposal,
+    ItemState,
     MemoryItem,
     MemoryLabel,
     Provenance,
@@ -69,6 +70,7 @@ class HarnessConfig:
     decoys_per_topic: int
     k: int
     k_sweep: tuple[int, ...]
+    scope_widths: tuple[int, ...]
     byte_budget: int
 
 
@@ -86,6 +88,9 @@ def _harness_config(config: Mapping[str, Any]) -> HarnessConfig:
     k_sweep = tuple(int(value) for value in section.get("k_sweep", [k]))
     if any(value < 1 for value in k_sweep):
         raise ValueError("harness.k_sweep values must be positive")
+    scope_widths = tuple(int(value) for value in section.get("scope_widths", [1]))
+    if any(value < 1 for value in scope_widths):
+        raise ValueError("harness.scope_widths values must be positive")
     byte_budget = int(section.get("byte_budget", 2048))
     if byte_budget < 1:
         raise ValueError("harness.byte_budget must be positive")
@@ -102,17 +107,19 @@ def _harness_config(config: Mapping[str, Any]) -> HarnessConfig:
         decoys_per_topic=decoys_per_topic,
         k=k,
         k_sweep=k_sweep,
+        scope_widths=scope_widths,
         byte_budget=byte_budget,
     )
 
 
-def _workload(seed: int, cfg: HarnessConfig) -> SyntheticScenario:
+def _workload(seed: int, cfg: HarnessConfig, entitled_per_topic: int = 1) -> SyntheticScenario:
     return generate_scaled_scenario(
         WorkloadConfig(
             seed=seed,
             apps=cfg.apps,
             topics_per_app=cfg.topics_per_app,
             decoys_per_topic=cfg.decoys_per_topic,
+            entitled_per_topic=entitled_per_topic,
         )
     )
 
@@ -231,57 +238,68 @@ def _rq1_enforcement(
 
 
 def _rq2_utility(cfg: HarnessConfig) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    recalls: dict[int, list[float]] = {k: [] for k in cfg.k_sweep}
+    recalls: dict[tuple[int, int], list[float]] = {
+        (width, k): [] for width in cfg.scope_widths for k in cfg.k_sweep
+    }
     rows: list[dict[str, Any]] = []
     for seed in cfg.seeds:
-        scenario = _workload(seed, cfg)
-        _, store, issuer, service = _prepare(scenario)
-        for k in cfg.k_sweep:
-            evaluations: list[QueryEvaluation] = []
-            for query in scenario.queries:
-                token = _issue(issuer, store, query.context, scenario.now + 50.0)
-                retrieval = service.retrieve(
-                    token, query.text, k, query.context.app_id, (query.context.tool_id,)
-                )
-                evaluations.append(
-                    QueryEvaluation(
-                        query.query_id,
-                        tuple(item.item_id for item in retrieval.items),
-                        query.entitled_ids,
-                        query.unauthorized_ids,
+        for width in cfg.scope_widths:
+            scenario = _workload(seed, cfg, entitled_per_topic=width)
+            _, store, issuer, service = _prepare(scenario)
+            for k in cfg.k_sweep:
+                evaluations: list[QueryEvaluation] = []
+                for query in scenario.queries:
+                    token = _issue(issuer, store, query.context, scenario.now + 50.0)
+                    retrieval = service.retrieve(
+                        token, query.text, k, query.context.app_id, (query.context.tool_id,)
                     )
+                    evaluations.append(
+                        QueryEvaluation(
+                            query.query_id,
+                            tuple(item.item_id for item in retrieval.items),
+                            query.entitled_ids,
+                            query.unauthorized_ids,
+                        )
+                    )
+                recall = evaluate_queries(evaluations)["entitled_recall_at_k"]
+                recalls[(width, k)].append(recall)
+                rows.append(
+                    {
+                        "rq": "RQ2",
+                        "seed": seed,
+                        "scope_width": width,
+                        "k": k,
+                        "entitled_recall_at_k": recall,
+                    }
                 )
-            recall = evaluate_queries(evaluations)["entitled_recall_at_k"]
-            recalls[k].append(recall)
-            rows.append({"rq": "RQ2", "seed": seed, "k": k, "entitled_recall_at_k": recall})
     aggregate = {
-        str(k): {
-            "entitled_recall_at_k_mean": _mean(values),
-            "entitled_recall_at_k_ci95": list(bootstrap_median_ci(values, seed=cfg.seeds[0] + k)),
-        }
-        for k, values in recalls.items()
+        "scope_widths": list(cfg.scope_widths),
+        "k_sweep": list(cfg.k_sweep),
+        "entitled_recall_at_k": {
+            f"w{width}_k{k}": {
+                "entitled_recall_at_k_mean": _mean(recalls[(width, k)]),
+                "entitled_recall_at_k_ci95": list(
+                    bootstrap_median_ci(recalls[(width, k)], seed=cfg.seeds[0] + width * 100 + k)
+                ),
+            }
+            for width in cfg.scope_widths
+            for k in cfg.k_sweep
+        },
     }
     return aggregate, rows
 
 
-def _derivation_parents(
-    app: str, consumer: str, purpose: str, tool: str, now: float
-) -> tuple[MemoryLabel, MemoryItem, MemoryItem]:
-    label = MemoryLabel(
-        purposes=frozenset({purpose}),
-        apps=frozenset({app}),
-        tools=frozenset({tool}),
-        consumers=frozenset({consumer}),
-        sensitivity=Sensitivity.PERSONAL,
-        not_before=now - 50.0,
-        expires_at=now + 500.0,
-    )
+def _rq3_derivation() -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    now = 1000.0
+    app, consumer, purpose, tool = "app0.pkg", "consumer0", "scheduling", "calendar.read"
+    verifier = ExtractiveAttributionVerifier()
+    issuer = TokenIssuer(_SIGNING_KEY)
 
-    def make(item_id: str, payload: str) -> MemoryItem:
+    def make_parent(item_id: str, payload: str, label: MemoryLabel) -> MemoryItem:
         provenance = Provenance(
             source_app=app,
             source_certificate_digest="reference-model",
-            source_tool=tool,
+            source_tool=None,
             source_channel="synthetic_generator",
             acquisition_token_digest="synthetic-token-digest",
             created_at=now,
@@ -289,71 +307,170 @@ def _derivation_parents(
         )
         return build_item(item_id, payload, label, provenance, namespace=consumer)
 
-    return label, make("parent_alpha", "alpha beta gamma"), make("parent_beta", "delta beta gamma")
+    def label_for(**overrides: Any) -> MemoryLabel:
+        base: dict[str, Any] = {
+            "purposes": frozenset({purpose}),
+            "apps": frozenset({app}),
+            "tools": frozenset({tool}),
+            "consumers": frozenset({consumer}),
+            "sensitivity": Sensitivity.PERSONAL,
+            "not_before": now - 50.0,
+            "expires_at": now + 500.0,
+        }
+        base.update(overrides)
+        return MemoryLabel(**base)
 
+    def new_store(*parents: MemoryItem) -> InMemoryStore:
+        store = InMemoryStore()
+        for parent in parents:
+            store.commit(parent)
+        return store
 
-def _rq3_derivation() -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    now = 1000.0
-    app, consumer, purpose, tool = "app0.pkg", "consumer0", "scheduling", "calendar.read"
-    label, parent_a, parent_b = _derivation_parents(app, consumer, purpose, tool, now)
-    context = TaskContext(app, tool, consumer, purpose, now, "n_deriv")
-    verifier = ExtractiveAttributionVerifier()
+    def issue(store: InMemoryStore, context: TaskContext) -> RetrievalToken:
+        return issuer.issue(
+            context,
+            expires_at=now + 100.0,
+            policy_epoch=store.policy_epoch,
+            permitted_tools=frozenset({context.tool_id}),
+        )
 
-    broader = MemoryLabel(
-        purposes=frozenset({purpose, "personalized_ads"}),
-        apps=label.apps,
-        tools=label.tools,
-        consumers=label.consumers,
-        sensitivity=label.sensitivity,
-        not_before=label.not_before,
-        expires_at=label.expires_at,
+    base_ctx = TaskContext(app, tool, consumer, purpose, now, "n_deriv")
+    label = label_for()
+    parent_a = make_parent("parent_alpha", "alpha beta gamma", label)
+    parent_b = make_parent("parent_beta", "delta beta gamma", label)
+    broader = label_for(purposes=frozenset({purpose, "personalized_ads"}))
+
+    def proposal(
+        item_id: str,
+        payload: str,
+        parent_ids: tuple[str, ...],
+        proposed_label: MemoryLabel,
+        expected_versions: dict[str, int] | None = None,
+    ) -> DerivationProposal:
+        return DerivationProposal(
+            item_id=item_id,
+            payload=payload,
+            parent_ids=parent_ids,
+            proposed_label=proposed_label,
+            transformation="extractive",
+            expected_versions=expected_versions or {},
+        )
+
+    cases: list[tuple[str, str, InMemoryStore, list[RetrievalToken], DerivationProposal]] = []
+
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("faithful_alpha", "faithful", store, [token],
+         proposal("derived_faithful_alpha", "alpha beta", (parent_a.item_id, parent_b.item_id), label))
+    )
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("faithful_gamma", "faithful", store, [token],
+         proposal("derived_faithful_gamma", "gamma", (parent_a.item_id, parent_b.item_id), label))
+    )
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("unsupported_epsilon", "unsupported", store, [token],
+         proposal("derived_unsupported_epsilon", "epsilon", (parent_a.item_id, parent_b.item_id), label))
+    )
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("unsupported_zeta", "unsupported", store, [token],
+         proposal("derived_unsupported_zeta", "zeta", (parent_a.item_id, parent_b.item_id), label))
+    )
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("laundering_alpha", "laundering", store, [token],
+         proposal("derived_laundering_alpha", "alpha beta", (parent_a.item_id, parent_b.item_id), broader))
+    )
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("laundering_gamma", "laundering", store, [token],
+         proposal("derived_laundering_gamma", "gamma", (parent_a.item_id, parent_b.item_id), broader))
     )
 
-    cases = [
-        ("faithful_alpha", "alpha beta", "extractive", label, "faithful"),
-        ("faithful_gamma", "gamma", "extractive", label, "faithful"),
-        ("unsupported_epsilon", "epsilon", "extractive", label, "unsupported"),
-        ("unsupported_zeta", "zeta", "extractive", label, "unsupported"),
-        ("laundering_alpha", "alpha beta", "extractive", broader, "laundering"),
-        ("laundering_gamma", "gamma", "extractive", broader, "laundering"),
-    ]
+    cross_parent = make_parent(
+        "parent_cross_scope",
+        "alpha beta gamma",
+        label_for(purposes=frozenset({"personalized_ads"})),
+    )
+    store = new_store(parent_a, cross_parent)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("cross_scope_parent", "cross_scope", store, [token],
+         proposal("derived_cross_scope", "alpha beta", (parent_a.item_id, cross_parent.item_id), label))
+    )
 
-    store = InMemoryStore()
-    store.commit(parent_a)
-    store.commit(parent_b)
-    issuer = TokenIssuer(_SIGNING_KEY)
+    store = new_store(parent_a, parent_b)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("stale_parent", "stale_parent", store, [token],
+         proposal("derived_stale_parent", "alpha beta", (parent_a.item_id, parent_b.item_id), label,
+                  expected_versions={parent_a.item_id: parent_a.version + 1}))
+    )
 
-    counts = {"faithful": 0, "unsupported": 0, "laundering": 0}
-    admitted = {"faithful": 0, "unsupported": 0, "laundering": 0}
+    expired_parent = make_parent(
+        "parent_expired",
+        "alpha beta gamma",
+        label_for(not_before=now - 100.0, expires_at=now - 10.0),
+    )
+    store = new_store(parent_a, expired_parent)
+    token = issue(store, base_ctx)
+    cases.append(
+        ("expired_parent", "expired_parent", store, [token],
+         proposal("derived_expired_parent", "alpha beta", (parent_a.item_id, expired_parent.item_id), label))
+    )
+
+    mismatch_ctx = TaskContext(app, tool, consumer, "personalized_ads", now, "n_deriv_mismatch")
+    store = new_store(parent_a, parent_b)
+    cases.append(
+        ("composition_mismatch", "composition_mismatch", store,
+         [issue(store, base_ctx), issue(store, mismatch_ctx)],
+         proposal("derived_composition_mismatch", "alpha beta", (parent_a.item_id, parent_b.item_id), label))
+    )
+
+    tool_c_parent = make_parent("parent_tool_c", "alpha beta gamma", label_for(tools=frozenset({"calendar.read"})))
+    tool_d_parent = make_parent("parent_tool_d", "delta beta gamma", label_for(tools=frozenset({"mail.read"})))
+    ctx_c = TaskContext(app, "calendar.read", consumer, purpose, now, "n_deriv_c")
+    ctx_d = TaskContext(app, "mail.read", consumer, purpose, now, "n_deriv_d")
+    store = new_store(tool_c_parent, tool_d_parent)
+    cases.append(
+        ("composition_disjoint_tools", "composition_disjoint_tools", store,
+         [issue(store, ctx_c), issue(store, ctx_d)],
+         proposal("derived_disjoint_tools", "alpha beta",
+                  (tool_c_parent.item_id, tool_d_parent.item_id), label_for(tools=frozenset())))
+    )
+
+    counts: dict[str, int] = {}
+    admitted: dict[str, int] = {}
     rows: list[dict[str, Any]] = []
-    for item_id, payload, transformation, proposed_label, kind in cases:
-        token = _issue(issuer, store, context, now + 100.0)
-        proposal = DerivationProposal(
-            item_id=f"derived_{item_id}",
-            payload=payload,
-            parent_ids=(parent_a.item_id, parent_b.item_id),
-            proposed_label=proposed_label,
-            transformation=transformation,
-        )
+    for case, kind, case_store, tokens, case_proposal in cases:
         result = admit_derivation(
-            store, issuer, [token], proposal, app, now, verifier=verifier
+            case_store, issuer, tokens, case_proposal, app, now, verifier=verifier
         )
-        counts[kind] += 1
-        if result.status == "ADMITTED":
-            admitted[kind] += 1
+        counts[kind] = counts.get(kind, 0) + 1
+        admitted[kind] = admitted.get(kind, 0) + (1 if result.status == "ADMITTED" else 0)
         rows.append(
             {
                 "rq": "RQ3",
-                "case": item_id,
+                "case": case,
                 "kind": kind,
                 "status": result.status,
                 "reason": result.reason,
             }
         )
 
-    attack_cases = counts["unsupported"] + counts["laundering"]
-    attack_admitted = admitted["unsupported"] + admitted["laundering"]
+    attack_kinds = [kind for kind in counts if kind != "faithful"]
+    attack_cases = sum(counts[kind] for kind in attack_kinds)
+    attack_admitted = sum(admitted[kind] for kind in attack_kinds)
     aggregate = {
+        "kinds": sorted(counts),
         "cases": {kind: counts[kind] for kind in counts},
         "admitted": {kind: admitted[kind] for kind in admitted},
         "false_acceptance_rate": attack_admitted / attack_cases if attack_cases else 0.0,
@@ -369,6 +486,9 @@ def _rq3_derivation() -> tuple[dict[str, Any], list[dict[str, Any]]]:
 def _rq4_lifecycle(cfg: HarnessConfig) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     post_expiry_releases = 0
     epoch_change_denials = 0
+    revoked_items_returned = 0
+    ttl_allowed_before_expiry = 0
+    ttl_denied_at_expiry = 0
     rows: list[dict[str, Any]] = []
     for seed in cfg.seeds:
         scenario = _workload(seed, cfg)
@@ -399,18 +519,60 @@ def _rq4_lifecycle(cfg: HarnessConfig) -> tuple[dict[str, Any], list[dict[str, A
         except RetrievalDenied:
             denied = 1
         epoch_change_denials += denied
+
+        revoked_returned = 0
+        revoke_clock, revoke_store, revoke_issuer, revoke_service = _prepare(scenario)
+        target_id = min(first.entitled_ids)
+        revoke_store.set_state(target_id, ItemState.TOMBSTONED)
+        revoke_clock.now = scenario.now
+        revoke_token = _issue(revoke_issuer, revoke_store, first.context, scenario.now + 50.0)
+        revoke_retrieval = revoke_service.retrieve(
+            revoke_token, first.text, first.k, first.context.app_id, (first.context.tool_id,)
+        )
+        revoked_returned = sum(
+            1 for item in revoke_retrieval.items if item.item_id == target_id
+        )
+        revoked_items_returned += revoked_returned
+
+        ttl_clock, ttl_store, ttl_issuer, ttl_service = _prepare(scenario)
+        ttl_target = ttl_store.get(target_id)
+        assert ttl_target is not None
+        expires_at = ttl_target.label.expires_at
+        ttl_clock.now = expires_at - 1e-6
+        before_token = _issue(ttl_issuer, ttl_store, first.context, scenario.now + 1_000_000.0)
+        before = ttl_service.retrieve(
+            before_token, first.text, first.k, first.context.app_id, (first.context.tool_id,)
+        )
+        allowed_before = sum(1 for item in before.items if item.item_id == target_id)
+        ttl_allowed_before_expiry += allowed_before
+        ttl_clock.now = expires_at
+        after_token = _issue(ttl_issuer, ttl_store, first.context, scenario.now + 1_000_000.0)
+        after = ttl_service.retrieve(
+            after_token, first.text, first.k, first.context.app_id, (first.context.tool_id,)
+        )
+        returned_at_expiry = sum(1 for item in after.items if item.item_id == target_id)
+        ttl_denied_at_expiry += returned_at_expiry
+
         rows.append(
             {
                 "rq": "RQ4",
                 "seed": seed,
                 "post_expiry_releases": released,
                 "epoch_change_denials": denied,
+                "revoked_items_returned": revoked_returned,
+                "ttl_allowed_before_expiry": allowed_before,
+                "ttl_returned_at_expiry": returned_at_expiry,
             }
         )
     return {
         "post_expiry_releases_total": post_expiry_releases,
         "epoch_change_denials": epoch_change_denials,
         "epoch_change_trials": len(cfg.seeds),
+        "revoked_items_returned_total": revoked_items_returned,
+        "revocation_trials": len(cfg.seeds),
+        "ttl_allowed_before_expiry": ttl_allowed_before_expiry,
+        "ttl_returned_at_expiry": ttl_denied_at_expiry,
+        "ttl_trials": len(cfg.seeds),
     }, rows
 
 
