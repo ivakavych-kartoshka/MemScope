@@ -1,0 +1,20 @@
+# Synthetic RQ1-RQ6 harness configuration.
+# Outputs are controlled synthetic measurements only; never paper results.
+# RQ5 (on-device cost) is reported as not_measured_offline.
+run:
+  mode: synthetic
+  seed: 7
+data:
+  name: multi_app
+  root: examples/synthetic_data
+retrieval:
+  k: 3
+output:
+  root: outputs/synthetic_harness
+harness:
+  seeds: [7, 11, 13, 17]
+  apps: 3
+  topics_per_app: 4
+  decoys_per_topic: 2
+  k_sweep: [1, 3, 5]
+  byte_budget: 600

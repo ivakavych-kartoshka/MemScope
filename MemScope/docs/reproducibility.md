@@ -1,6 +1,8 @@
 # Reproducibility
 
-Synthetic runs fix a seed and emit config SHA-256, environment metadata, query-level JSONL, aggregate JSON, and content-free audit events. Plotting reads `metrics.json`; there are no hard-coded table or curve values. Repeated fixed-seed runs are tested for identical metrics and query records.
+Synthetic runs fix a seed and emit config SHA-256, environment metadata, query-level JSONL, aggregate JSON, and content-free audit events. Every runner also writes a deterministic `run_manifest.json` recording the stage and the files it produced, so a directory mixing stages or platforms is detectable. Plotting reads `metrics.json`; there are no hard-coded table or curve values. Repeated fixed-seed runs are tested for identical metrics and query records.
+
+The RQ harness (`scripts/run_harness.py`, `configs/synthetic_harness.yaml`) runs RQ1--RQ6 over the scaled synthetic multi-app workload across a seed list and writes `harness_summary.json` and `harness_runs.jsonl`. RQ5 (on-device cost) is reported as `not_measured_offline`; the other RQs are controlled synthetic measurements, not paper results.
 
 The synthetic harness deliberately sets latency to zero rather than pretending Python host timing is a mobile systems measurement. Real latency, energy, thermal, storage, and key-operation measurements require the Android instrumentation plan.
 

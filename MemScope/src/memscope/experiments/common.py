@@ -6,9 +6,11 @@ import hashlib
 import json
 import platform
 import sys
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
+from ..utils.io import write_json
 from ..utils.validation import require_keys
 
 
@@ -40,3 +42,22 @@ def run_metadata(config: Mapping[str, Any], stage: str) -> dict[str, Any]:
         "result_class": "synthetic_smoke_test" if config["run"]["mode"] == "synthetic" else "real",
         "paper_result_claimed": False,
     }
+
+
+def write_run_manifest(
+    output_dir: Path, config: Mapping[str, Any], stage: str, outputs: Sequence[str]
+) -> None:
+    """Record which files a stage produced so stale artifacts are detectable.
+
+    The manifest is deterministic (no wall-clock time) so re-running a stage on
+    the same inputs yields a byte-identical manifest; provenance is reconstructed
+    from the config hash, environment, and output list.
+    """
+
+    write_json(
+        output_dir / "run_manifest.json",
+        {
+            "metadata": run_metadata(config, stage),
+            "outputs": sorted(outputs),
+        },
+    )

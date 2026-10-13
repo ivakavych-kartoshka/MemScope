@@ -7,7 +7,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_all_configs_parse_and_validate() -> None:
-    for name in ("default.yaml", "synthetic_demo.yaml", "experiment_template.yaml"):
+    for name in (
+        "default.yaml",
+        "synthetic_demo.yaml",
+        "synthetic_harness.yaml",
+        "experiment_template.yaml",
+    ):
         validate_config(load_yaml(ROOT / "configs" / name))
 
 

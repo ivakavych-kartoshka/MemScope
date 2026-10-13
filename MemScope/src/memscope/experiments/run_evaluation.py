@@ -15,7 +15,7 @@ from ..methods.store import InMemoryStore
 from ..methods.tokens import TokenIssuer
 from ..metrics.core import evaluate_queries
 from ..utils.io import write_json, write_jsonl
-from .common import run_metadata, validate_config
+from .common import run_metadata, validate_config, write_run_manifest
 
 
 def run_evaluation(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
@@ -116,5 +116,17 @@ def run_evaluation(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any
     write_json(
         output_dir / "audit_events.json",
         {"notice": SYNTHETIC_NOTICE, "events": [as_jsonable(x) for x in store.audit_events()]},
+    )
+    write_run_manifest(
+        output_dir,
+        config,
+        "evaluate",
+        [
+            "resolved_config.json",
+            "query_results.jsonl",
+            "metrics.json",
+            "audit_events.json",
+            "run_manifest.json",
+        ],
     )
     return result

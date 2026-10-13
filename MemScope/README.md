@@ -45,10 +45,13 @@ python scripts/run_synthetic_demo.py --config configs/synthetic_demo.yaml
 python scripts/make_plots.py \
   --input outputs/synthetic_demo/metrics.json \
   --output outputs/synthetic_demo/metrics.png
+python scripts/run_harness.py --config configs/synthetic_harness.yaml
 python -m pytest -q
 ```
 
 All demo records and plots carry the label **“synthetic smoke-test output, not a paper result.”** The demo compares MemScope with unscoped, namespace, and prompt-only reference baselines using the same fictional store, queries, lexical ranker, seed, and result limit.
+
+`run_harness.py` runs the offline synthetic RQ1--RQ6 harness over the scaled multi-app workload (multiple seeds) and writes `harness_summary.json` plus per-run `harness_runs.jsonl`. It reports RQ1 enforcement, RQ2 utility, RQ3 derivation, RQ4 lifecycle, and RQ6 retention as **controlled synthetic** measurements, and reports RQ5 (on-device cost) as `not_measured_offline`. None of these are paper results.
 
 ## Verification
 
@@ -79,6 +82,7 @@ Device energy, thermal state, key-operation cost, Android CPU/NPU time, benchmar
 ## Configuration
 
 - `configs/synthetic_demo.yaml`: runnable offline demo.
+- `configs/synthetic_harness.yaml`: offline synthetic RQ1--RQ6 harness (RQ5 marked not measured).
 - `configs/default.yaml`: small reference defaults.
 - `configs/experiment_template.yaml`: EC2 template; real paths and provenance fields are deliberately unconfigured.
 - `configs/policies.example.yaml`: illustrative policy fragment, not a production Android policy language.
@@ -111,7 +115,7 @@ MemScope/
 │   ├── adapters/           AOSP and attack contracts
 │   ├── baselines/          runnable and external baselines
 │   ├── data/               schemas, adapters, synthetic generator
-│   ├── experiments/        evaluation, preflight, ablation, plotting
+│   ├── experiments/        evaluation, preflight, ablation, RQ harness, plotting
 │   ├── methods/            tokens, policy, retrieval, derivation, compaction
 │   ├── metrics/            metrics and statistical helpers
 │   ├── models/             ranker and attribution interfaces
@@ -121,7 +125,7 @@ MemScope/
 
 ## Reproducibility
 
-Each generated result stores the config hash, seed, Python/platform metadata, result class, and a false `paper_result_claimed` flag. Query-level records are JSONL; figures read those generated results rather than hard-coded values. External runs must add AOSP commit, device/build fingerprint, model version/date, dataset checksums/licenses, attack commits, prompts, seed lists, thermal state, exclusions, and raw trace hashes.
+Each generated result stores the config hash, seed, Python/platform metadata, result class, and a false `paper_result_claimed` flag. Every runner also writes a deterministic `run_manifest.json` listing the files that stage produced, so stale artifacts from another platform or stage are detectable rather than silently mistaken for fresh output. Query-level records are JSONL; figures read those generated results rather than hard-coded values. External runs must add AOSP commit, device/build fingerprint, model version/date, dataset checksums/licenses, attack commits, prompts, seed lists, thermal state, exclusions, and raw trace hashes.
 
 ## Limitations and known gaps
 

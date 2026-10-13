@@ -13,6 +13,7 @@ from .experiments.plot_results import plot_metrics
 from .experiments.run_ablation import run_ablation
 from .experiments.run_calibration import run_calibration
 from .experiments.run_evaluation import run_evaluation
+from .experiments.run_harness import run_harness
 from .utils.io import load_yaml
 from .utils.logging import configure_logging
 
@@ -35,6 +36,9 @@ def build_parser() -> argparse.ArgumentParser:
     experiment = sub.add_parser("experiment", help="run a configured experiment stage")
     experiment.add_argument("--config", type=Path, required=True)
     experiment.add_argument("--stage", choices=("calibrate", "evaluate", "ablate"), required=True)
+
+    harness = sub.add_parser("harness", help="run the synthetic RQ1-RQ6 harness")
+    harness.add_argument("--config", type=Path, required=True)
 
     plot = sub.add_parser("plot", help="plot a generated metrics JSON file")
     plot.add_argument("--input", type=Path, required=True)
@@ -60,6 +64,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = run_calibration(config, output_dir)
         else:
             result = run_ablation(config, output_dir)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    if args.command == "harness":
+        config = load_yaml(args.config)
+        result = run_harness(config, _output_dir(config, args.config))
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     if args.command == "plot":

@@ -11,7 +11,7 @@ from ..data.synthetic import SYNTHETIC_NOTICE, generate_synthetic_scenario
 from ..metrics.core import evaluate_queries
 from ..models.ranking import LexicalRanker
 from ..utils.io import write_json
-from .common import run_metadata, validate_config
+from .common import run_metadata, validate_config, write_run_manifest
 
 
 def run_ablation(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
@@ -53,6 +53,9 @@ def run_ablation(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     }
     write_json(output_dir / "resolved_config.json", dict(config))
     write_json(output_dir / "ablation.json", result)
+    write_run_manifest(
+        output_dir, config, "ablate", ["resolved_config.json", "ablation.json", "run_manifest.json"]
+    )
     return result
 
 

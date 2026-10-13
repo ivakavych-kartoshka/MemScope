@@ -6,7 +6,7 @@ from typing import Any
 
 from ..data.synthetic import SYNTHETIC_NOTICE
 from ..utils.io import write_json
-from .common import run_metadata, validate_config
+from .common import run_metadata, validate_config, write_run_manifest
 
 
 def run_calibration(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
@@ -19,4 +19,10 @@ def run_calibration(config: Mapping[str, Any], output_dir: Path) -> dict[str, An
     }
     write_json(output_dir / "resolved_config.json", dict(config))
     write_json(output_dir / "calibration_preflight.json", result)
+    write_run_manifest(
+        output_dir,
+        config,
+        "calibrate",
+        ["resolved_config.json", "calibration_preflight.json", "run_manifest.json"],
+    )
     return result

@@ -22,6 +22,7 @@ No item below is optional for any real experimental cell that depends on it.
 ## Real data
 
 - [ ] Manually obtain and license LoCoMo, LongMemEval, Memora, PA-Bench, and any ProfileFoundry/PersonaChat/AndroidWorld inputs.
+- [x] Build and validate the **offline synthetic multi-app workload and policy oracle**: `data/synthetic.generate_scaled_scenario` (deterministic, decoys cover wrong purpose/tool/expiry/not-yet-valid) with an independent label-derived oracle (`oracle_authorized`). Exercised by the RQ harness (`experiments/run_harness.py`) across seeds. Synthetic only; does not replace licensed inputs.
 - [ ] Record source/version/license/checksums and normalize to `docs/data_format.md`.
 - [ ] Write/freeze the policy annotation handbook; double-annotate a stratified sample; report agreement and adjudication.
 - [ ] Freeze splits before final runs and keep pilot traces separate.
