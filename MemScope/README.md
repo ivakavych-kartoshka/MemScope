@@ -46,12 +46,17 @@ python scripts/make_plots.py \
   --input outputs/synthetic_demo/metrics.json \
   --output outputs/synthetic_demo/metrics.png
 python scripts/run_harness.py --config configs/synthetic_harness.yaml
+python scripts/make_harness_report.py \
+  --summary outputs/synthetic_harness/harness_summary.json \
+  --output-dir outputs/synthetic_harness/report
 python -m pytest -q
 ```
 
 All demo records and plots carry the label **“synthetic smoke-test output, not a paper result.”** The demo compares MemScope with unscoped, namespace, and prompt-only reference baselines using the same fictional store, queries, lexical ranker, seed, and result limit.
 
 `run_harness.py` runs the offline synthetic RQ1--RQ6 harness over the scaled multi-app workload (multiple seeds) and writes `harness_summary.json` plus per-run `harness_runs.jsonl`. It reports RQ1 enforcement, RQ2 utility, RQ3 derivation, RQ4 lifecycle, and RQ6 retention as **controlled synthetic** measurements, and reports RQ5 (on-device cost) as `not_measured_offline`. None of these are paper results.
+
+`make_harness_report.py` (or `memscope harness-report`) renders CSV/Markdown tables (`rq1_enforcement`, `rq2_utility`, `rq3_derivation`, `rq4_lifecycle`, `rq6_retention`) and PNG figures from `harness_summary.json`. Every table and figure is derived from the summary and carries the synthetic notice; nothing is hard-coded.
 
 ## Verification
 
@@ -115,7 +120,7 @@ MemScope/
 │   ├── adapters/           AOSP and attack contracts
 │   ├── baselines/          runnable and external baselines
 │   ├── data/               schemas, adapters, synthetic generator
-│   ├── experiments/        evaluation, preflight, ablation, RQ harness, plotting
+│   ├── experiments/        evaluation, preflight, ablation, RQ harness, report, plotting
 │   ├── methods/            tokens, policy, retrieval, derivation, compaction
 │   ├── metrics/            metrics and statistical helpers
 │   ├── models/             ranker and attribution interfaces

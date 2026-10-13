@@ -4,6 +4,8 @@ Synthetic runs fix a seed and emit config SHA-256, environment metadata, query-l
 
 The RQ harness (`scripts/run_harness.py`, `configs/synthetic_harness.yaml`) runs RQ1--RQ6 over the scaled synthetic multi-app workload across a seed list and writes `harness_summary.json` and `harness_runs.jsonl`. RQ5 (on-device cost) is reported as `not_measured_offline`; the other RQs are controlled synthetic measurements, not paper results.
 
+The report renderer (`scripts/make_harness_report.py`, `memscope harness-report`) reads `harness_summary.json` and writes CSV/Markdown tables and PNG figures under `tables/` and `figures/`. It derives every cell and point from the summary (no hard-coded values) and stamps the synthetic notice on each table and figure.
+
 The synthetic harness deliberately sets latency to zero rather than pretending Python host timing is a mobile systems measurement. Real latency, energy, thermal, storage, and key-operation measurements require the Android instrumentation plan.
 
 For real runs, archive:

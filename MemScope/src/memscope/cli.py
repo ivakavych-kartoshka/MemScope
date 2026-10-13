@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .data.adapters import JsonlBenchmarkAdapter
+from .experiments.harness_report import write_harness_report
 from .experiments.plot_results import plot_metrics
 from .experiments.run_ablation import run_ablation
 from .experiments.run_calibration import run_calibration
@@ -39,6 +40,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     harness = sub.add_parser("harness", help="run the synthetic RQ1-RQ6 harness")
     harness.add_argument("--config", type=Path, required=True)
+
+    harness_report = sub.add_parser(
+        "harness-report", help="render tables and figures from a harness summary"
+    )
+    harness_report.add_argument("--summary", type=Path, required=True)
+    harness_report.add_argument("--output-dir", type=Path, required=True)
 
     plot = sub.add_parser("plot", help="plot a generated metrics JSON file")
     plot.add_argument("--input", type=Path, required=True)
@@ -74,6 +81,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "plot":
         path = plot_metrics(args.input, args.output)
         print(path)
+        return 0
+    if args.command == "harness-report":
+        result = write_harness_report(args.summary, args.output_dir)
+        print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     if args.command == "validate-data":
         JsonlBenchmarkAdapter(args.name, args.root).validate()
