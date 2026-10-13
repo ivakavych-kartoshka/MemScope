@@ -47,6 +47,7 @@ from ..metrics.statistics import bootstrap_median_ci, wilson_interval
 from ..models.attribution import ExtractiveAttributionVerifier
 from ..utils.io import write_json, write_jsonl
 from .common import run_metadata, validate_config, write_run_manifest
+from .negative_controls import run_negative_controls
 
 _SIGNING_KEY = b"memscope-synthetic-key-material"
 RQ5_STATUS = "not_measured_offline"
@@ -485,6 +486,12 @@ def run_harness(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     rq3, rows3 = _rq3_derivation()
     rq4, rows4 = _rq4_lifecycle(cfg)
     rq6, rows6 = _rq6_retention(cfg)
+    neg, rows_neg = run_negative_controls(
+        seeds=cfg.seeds,
+        apps=cfg.apps,
+        topics_per_app=cfg.topics_per_app,
+        decoys_per_topic=cfg.decoys_per_topic,
+    )
 
     result: dict[str, Any] = {
         "notice": SYNTHETIC_NOTICE,
@@ -497,12 +504,16 @@ def run_harness(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "rq4_lifecycle": rq4,
         "rq5_mobile_cost": {"status": RQ5_STATUS, "detail": RQ5_DETAIL},
         "rq6_retention": rq6,
+        "negative_controls": neg,
         "interpretation": _INTERPRETATION,
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     write_json(output_dir / "resolved_config.json", dict(config))
     write_json(output_dir / "harness_summary.json", result)
-    write_jsonl(output_dir / "harness_runs.jsonl", [*rows1, *rows2, *rows3, *rows4, *rows6])
+    write_jsonl(
+        output_dir / "harness_runs.jsonl",
+        [*rows1, *rows2, *rows3, *rows4, *rows6, *rows_neg],
+    )
     write_run_manifest(
         output_dir,
         config,

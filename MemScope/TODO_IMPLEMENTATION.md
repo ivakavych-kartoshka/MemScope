@@ -32,6 +32,7 @@ No item below is optional for any real experimental cell that depends on it.
 
 - [ ] Pin and reproduce AppSearch visibility, GAAP, Audience-Bound Memory, and MNC where artifacts are available; record unsupported policy dimensions.
 - [ ] Pin/reproduce or clearly label reimplementations of MEXTRA, ADAM, SPORE, MINJA, both MemPoison settings, and MemEvoBench-style drift.
+- [x] Implement the **offline synthetic** negative controls (shadow-cache bypass, stale-token replay, always-accept verifier, authorized-copy-after-release) in `experiments/negative_controls.py`, reporting each control's guarantee boundary and the MemScope-mediated path. Synthetic pipeline checks only; the matching device-harness controls below are still required.
 - [ ] Implement always-allow, no-memory, shadow-cache, stale-token, always-accept, and authorized-copy negative controls in the device harness.
 - [ ] Freeze attack budgets, knowledge, success strata, and connector-only deviations.
 

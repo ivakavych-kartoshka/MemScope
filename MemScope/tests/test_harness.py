@@ -83,6 +83,15 @@ def test_harness_writes_run_manifest(tmp_path: Path) -> None:
     assert "harness_summary.json" in manifest["outputs"]
 
 
+def test_harness_reports_negative_controls(tmp_path: Path) -> None:
+    result = run_harness(_config(tmp_path, seeds=[7, 11]), tmp_path / "out")
+    controls = result["negative_controls"]
+    assert controls["summary"]["controls"] == 4
+    assert controls["shadow_cache"]["mediated_unauthorized_returned"] == 0
+    assert controls["stale_token_replay"]["mediated_guarantee_holds"] is True
+    assert controls["authorized_copy_after_release"]["mediated_guarantee_holds"] is False
+
+
 def test_harness_rejects_real_mode(tmp_path: Path) -> None:
     config = _config(tmp_path, seeds=[7])
     config["run"]["mode"] = "real"

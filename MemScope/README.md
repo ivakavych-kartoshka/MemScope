@@ -56,7 +56,9 @@ All demo records and plots carry the label **“synthetic smoke-test output, not
 
 `run_harness.py` runs the offline synthetic RQ1--RQ6 harness over the scaled multi-app workload (multiple seeds) and writes `harness_summary.json` plus per-run `harness_runs.jsonl`. It reports RQ1 enforcement, RQ2 utility, RQ3 derivation, RQ4 lifecycle, and RQ6 retention as **controlled synthetic** measurements, and reports RQ5 (on-device cost) as `not_measured_offline`. None of these are paper results.
 
-`make_harness_report.py` (or `memscope harness-report`) renders CSV/Markdown tables (`rq1_enforcement`, `rq2_utility`, `rq3_derivation`, `rq4_lifecycle`, `rq6_retention`) and PNG figures from `harness_summary.json`. Every table and figure is derived from the summary and carries the synthetic notice; nothing is hard-coded.
+`make_harness_report.py` (or `memscope harness-report`) renders CSV/Markdown tables (`rq1_enforcement`, `rq2_utility`, `rq3_derivation`, `rq4_lifecycle`, `rq6_retention`, `negative_controls`) and PNG figures from `harness_summary.json`. Every table and figure is derived from the summary and carries the synthetic notice; nothing is hard-coded.
+
+The harness also runs the paper's Section 11.6 negative controls (shadow cache, stale-token replay, always-accept verifier, authorized-copy-after-release). Each control deliberately breaks one assumption and reports whether it defeats the matching guarantee, alongside the MemScope-mediated path, so the guarantee boundaries are explicit. The authorized-copy control is out of scope by design (`mediated_guarantee_holds = False`).
 
 ## Verification
 
@@ -120,7 +122,7 @@ MemScope/
 │   ├── adapters/           AOSP and attack contracts
 │   ├── baselines/          runnable and external baselines
 │   ├── data/               schemas, adapters, synthetic generator
-│   ├── experiments/        evaluation, preflight, ablation, RQ harness, report, plotting
+│   ├── experiments/        evaluation, preflight, ablation, RQ harness, negative controls, report, plotting
 │   ├── methods/            tokens, policy, retrieval, derivation, compaction
 │   ├── metrics/            metrics and statistical helpers
 │   ├── models/             ranker and attribution interfaces

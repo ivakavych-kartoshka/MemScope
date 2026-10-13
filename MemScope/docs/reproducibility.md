@@ -6,6 +6,8 @@ The RQ harness (`scripts/run_harness.py`, `configs/synthetic_harness.yaml`) runs
 
 The report renderer (`scripts/make_harness_report.py`, `memscope harness-report`) reads `harness_summary.json` and writes CSV/Markdown tables and PNG figures under `tables/` and `figures/`. It derives every cell and point from the summary (no hard-coded values) and stamps the synthetic notice on each table and figure.
 
+The harness also reports the paper's Section 11.6 negative controls (`negative_controls`). For each control it records `control_defeats_guarantee` (breaking the assumption makes the boundary visible) and `mediated_guarantee_holds` (the MemScope-mediated path keeps the guarantee). The authorized-copy-after-release control is out of scope by design, so its mediated guarantee is reported as not held rather than as a failure.
+
 The synthetic harness deliberately sets latency to zero rather than pretending Python host timing is a mobile systems measurement. Real latency, energy, thermal, storage, and key-operation measurements require the Android instrumentation plan.
 
 For real runs, archive:

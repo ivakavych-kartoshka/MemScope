@@ -57,6 +57,24 @@ def test_markdown_carries_synthetic_notice(tmp_path: Path) -> None:
     assert "not_measured_offline" in text
 
 
+def test_negative_controls_table_and_boundary(tmp_path: Path) -> None:
+    summary_path = _summary(tmp_path)
+    write_harness_report(summary_path, tmp_path / "report")
+    rows = {row["control"]: row for row in csv.DictReader(
+        (tmp_path / "report" / "tables" / "negative_controls.csv").open(encoding="utf-8")
+    )}
+    assert set(rows) == {
+        "shadow_cache",
+        "stale_token_replay",
+        "always_accept_verifier",
+        "authorized_copy_after_release",
+    }
+    assert rows["shadow_cache"]["mediated_guarantee_holds"] == "True"
+    assert rows["authorized_copy_after_release"]["mediated_guarantee_holds"] == "False"
+    text = (tmp_path / "report" / "tables" / "harness_tables.md").read_text()
+    assert "negative-control boundaries" in text
+
+
 def test_report_rejects_non_summary_input(tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"foo": "bar"}))

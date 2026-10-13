@@ -113,6 +113,37 @@ def _rq6_table(summary: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
     return header, rows
 
 
+_NEGATIVE_CONTROL_ORDER = (
+    "shadow_cache",
+    "stale_token_replay",
+    "always_accept_verifier",
+    "authorized_copy_after_release",
+)
+
+
+def _negative_controls_table(summary: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
+    controls = summary["negative_controls"]
+    header = [
+        "control",
+        "assumption_broken",
+        "guarantee",
+        "control_defeats_guarantee",
+        "mediated_guarantee_holds",
+    ]
+    names = [name for name in _NEGATIVE_CONTROL_ORDER if name in controls]
+    rows = [
+        [
+            name,
+            controls[name]["assumption_broken"],
+            controls[name]["guarantee"],
+            controls[name]["control_defeats_guarantee"],
+            controls[name]["mediated_guarantee_holds"],
+        ]
+        for name in names
+    ]
+    return header, rows
+
+
 def _plot_rq1(summary: dict[str, Any], figures_dir: Path) -> list[Path]:
     import matplotlib
 
@@ -224,6 +255,8 @@ def write_harness_report(summary_path: Path, output_dir: Path) -> dict[str, Any]
         "rq4_lifecycle": (rq4_header, rq4_rows),
         "rq6_retention": (rq6_header, rq6_rows),
     }
+    if "negative_controls" in summary:
+        tables["negative_controls"] = _negative_controls_table(summary)
     produced_tables: list[str] = []
     markdown = [f"> {summary['notice']}", ""]
     for name, (header, rows) in tables.items():
@@ -237,6 +270,22 @@ def write_harness_report(summary_path: Path, output_dir: Path) -> dict[str, Any]
         f"RQ5 mobile cost: {summary['rq5_mobile_cost']['status']} "
         f"({summary['rq5_mobile_cost']['detail']})"
     )
+    if "negative_controls" in summary:
+        controls = summary["negative_controls"]
+        markdown.append("")
+        markdown.append("## negative-control boundaries")
+        markdown.append("")
+        for name in _NEGATIVE_CONTROL_ORDER:
+            boundary = controls.get(name, {}).get("boundary")
+            if boundary:
+                markdown.append(f"- **{name}**: {boundary}")
+        counts = controls["summary"]
+        markdown.append("")
+        markdown.append(
+            f"Controls: {counts['controls']}; "
+            f"defeating their guarantee: {counts['controls_defeating_their_guarantee']}; "
+            f"mediated guarantee held: {counts['mediated_guarantees_held']}."
+        )
     tables_dir.mkdir(parents=True, exist_ok=True)
     (tables_dir / "harness_tables.md").write_text("\n".join(markdown) + "\n", encoding="utf-8")
     produced_tables.append("tables/harness_tables.md")
