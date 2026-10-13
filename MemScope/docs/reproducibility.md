@@ -1,0 +1,18 @@
+# Reproducibility
+
+Synthetic runs fix a seed and emit config SHA-256, environment metadata, query-level JSONL, aggregate JSON, and content-free audit events. Plotting reads `metrics.json`; there are no hard-coded table or curve values. Repeated fixed-seed runs are tested for identical metrics and query records.
+
+The synthetic harness deliberately sets latency to zero rather than pretending Python host timing is a mobile systems measurement. Real latency, energy, thermal, storage, and key-operation measurements require the Android instrumentation plan.
+
+For real runs, archive:
+
+- repository commit and clean/dirty status;
+- exact Python lockfile and analysis container/AMI;
+- AOSP commit/patch series, compiler/JDK/SDK/NDK/kernel/AppSearch versions and build flags;
+- device model, firmware/build fingerprint, battery health, secure-hardware capabilities, ambient/thermal/charging state;
+- model provider/version/date, local hashes/quantization, prompts and decoding;
+- dataset version/license/checksums/transforms/exclusions/policy annotation version;
+- attack and baseline commit hashes, reproduction status and deviations;
+- seed list, raw JSONL traces, failed runs, exclusions, power method, and artifact hashes.
+
+Use at least three process/device restarts for microbenchmarks. Keep pilots separate from final runs. Apply paired comparisons, bootstrap intervals, Wilson/exact intervals for rates, declared Holm families, effect sizes, and device blocking as specified by the paper.

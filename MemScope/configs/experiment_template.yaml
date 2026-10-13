@@ -1,0 +1,27 @@
+# Copy this file and replace data.root only after manually provisioning a benchmark.
+# Keep run.mode=synthetic for local smoke tests. Set it to real on EC2 only after
+# completing the benchmark-specific TODOs and validating policy annotations.
+run:
+  mode: synthetic
+  seed: 20261003
+data:
+  name: multi_app  # locomo | longmemeval | memora | pa_bench | multi_app
+  root: /replace/on/ec2/with/manually/prepared/data
+retrieval:
+  k: 10
+output:
+  root: outputs/experiment_template
+device:
+  name: unconfigured
+  build_fingerprint: unconfigured
+  thermal_protocol: unconfigured
+model:
+  identifier: unconfigured
+  version_date: unconfigured
+  decoding: unconfigured
+external_artifacts:
+  mextra: null
+  adam: null
+  spore: null
+  minja: null
+  mempoison: null

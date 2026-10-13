@@ -1,0 +1,10 @@
+run:
+  mode: synthetic
+  seed: 11
+data:
+  name: multi_app
+  root: examples/synthetic_data
+retrieval:
+  k: 2
+output:
+  root: outputs/example

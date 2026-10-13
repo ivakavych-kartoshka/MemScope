@@ -1,0 +1,39 @@
+\begin{figure*}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\linewidth,height=55mm,
+  xlabel={Scope width (normalized)},ylabel={Metric (normalized)},
+  xmin=0,xmax=1,ymin=0,ymax=1,
+  grid=major,legend style={font=\tiny,at={(0.5,-0.25)},anchor=north,legend columns=1},
+  tick label style={font=\scriptsize},label style={font=\small}]
+\addplot[very thick,msblue,mark=*] coordinates {(0,.52) (.2,.61) (.4,.69) (.6,.76) (.8,.82) (1,.86)};
+\addlegendentry{expected entitled utility}
+\addplot[very thick,msorange,dashed,mark=square*] coordinates {(0,.03) (.2,.06) (.4,.13) (.6,.25) (.8,.46) (1,.72)};
+\addlegendentry{expected exposure}
+\end{axis}
+\end{tikzpicture}
+\caption{Hypothesized utility--exposure trade-off.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\linewidth,height=55mm,
+  xlabel={Store size (items, log scale)},ylabel={Retrieval latency (normalized)},
+  xmode=log,log basis x=10,xmin=100,xmax=100000,ymin=0,ymax=1,
+  grid=major,legend style={font=\tiny,at={(0.5,-0.25)},anchor=north,legend columns=1},
+  tick label style={font=\scriptsize},label style={font=\small}]
+\addplot[very thick,msgray,mark=triangle*] coordinates {(100,.10) (1000,.18) (10000,.31) (100000,.55)};
+\addlegendentry{baseline hypothesis}
+\addplot[very thick,msgreen,dashed,mark=diamond*] coordinates {(100,.13) (1000,.22) (10000,.38) (100000,.66)};
+\addlegendentry{MemScope hypothesis}
+\end{axis}
+\end{tikzpicture}
+\caption{Hypothesized authorization overhead.}
+\end{subfigure}
+\caption{\textbf{Conceptual expected trends, not experimental results.} Coordinates are illustrative only and must be replaced by measurements and uncertainty intervals before submission.}
+\label{fig:placeholder-trends}
+\end{figure*}

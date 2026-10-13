@@ -1,0 +1,65 @@
+\section{MemScope design}
+\label{sec:method}
+
+\subsection{Task-rooted retrieval tokens}
+
+The token issuer observes an OS-mediated task start rather than accepting a purpose asserted by the model. Each installed agent declares AppFunctions, human-readable purposes, tool dependencies, and requested memory classes. At task start, the issuer intersects this declaration with device policy, user/enterprise restrictions, and the caller's package identity. The resulting token contains exactly one purpose, one consumer, one caller app, a bounded tool set, a policy epoch, issuance and expiry times, a nonce, and an optional parent-token digest.
+
+Tokens attenuate. If tool $t_1$ calls $t_2$, the child token must satisfy
+\begin{equation}
+\mathsf{Scope}(\kappa_{t_2})\preceq\mathsf{Scope}(\kappa_{t_1})
+\end{equation}
+and names $t_2$ as the active consumer. An agent cannot reuse the parent token as a bearer capability at an unrelated tool because Binder caller identity and the invocation-chain digest are verified together. Replay caches reject nonce reuse for one-shot operations; reusable tokens have short TTLs and per-token query budgets.
+
+Purpose taxonomies inevitably contain ambiguity. MemScope therefore separates three cases. A manifest-matched calendar-creation action maps deterministically to a scheduling purpose. A compound task is decomposed into subtasks with separate tokens. An unknown or unusually sensitive mapping requires user confirmation and yields the narrowest applicable token. A language model may help explain the mapping but is not the policy authority. The frozen v0 taxonomy, AppFunction mapping, precedence order, wildcard policy, and declassification rules are specified in \cref{app:policy-frozen}.
+
+\subsection{Pre-ranking authorization}
+
+AppSearch ranking can combine lexical match, schema filters, properties, and application-defined scores \citep{android2026appsearch}. MemScope adds an indexable authorization projection: hashed IDs for allowed apps, tools, consumers, and purposes, plus not-before/expiry ranges and a policy epoch. The store query includes exact/range constraints that form an over-approximation of \cref{eq:auth}. The trusted monitor then rechecks each candidate against the authenticated label before decryption and ranking. This two-stage plan reduces work without trusting the index to make the final decision.
+
+Filtering precedes vector ranking and model reranking. Embeddings can be stored within the same compartment or in a separately protected index. If embeddings are treated as sensitive, unauthorized queries do not receive distances or hit counts. The API pads or coarsens certain errors (no results, invalid scope, rate limit) to reduce trivial enumeration, although complete access-pattern confidentiality is outside the formal guarantee.
+
+\subsection{Direct writes}
+
+A direct write includes payload, source descriptor, active token, requested retention class, and optional user instruction. The service computes policy defaults; the application cannot supply a broader label. Source app and tool are taken from the call chain. Purpose begins at the active task purpose or a policy-defined subset. Consumer sets default to the writing agent and approved system surfaces, never to all installed agents. TTL is capped by the minimum of source policy, task policy, and user choice. High-sensitivity data can require a separate compartment and suppress content-bearing audit fields.
+
+User corrections are versioned rather than overwritten invisibly. A correction creates a new item linked by \texttt{supersedes}; the old item becomes invalid for ordinary retrieval at the commit epoch and is later compacted. This supports Memora-style update evaluation \citep{uddin2026memora} and makes stale-memory reuse observable.
+
+\subsection{Derived writes and attribution}
+
+Summaries, extracted preferences, and reflections use a separate call. The proposal contains generated payload $x_d$, transformation type, ordered parent IDs $S$, one or more active tokens $\Gamma$, and optional spans mapping claims to sources. MemScope performs four checks:
+
+\begin{enumerate}[leftmargin=*]
+  \item Every parent exists, is unexpired, and is visible to at least one token in $\Gamma$. All tokens in $\Gamma$ must share one composition principal $(a^*,c^*,p^*)$: the same caller app, consumer, and purpose. Each parent may be reached by a different tool, but only as already authorized for the shared task principal.
+  \item Parent versions and digests match the snapshot on which generation occurred.
+  \item The proposed label is equal to or more restrictive than $\Meet(S)$.
+  \item An attribution verifier finds no material claim unsupported by the cited sources under the configured verifier policy.
+\end{enumerate}
+
+The deterministic first three checks establish policy monotonicity. The fourth is a content-integrity heuristic whose errors are measured. For safety-critical or highly sensitive items, the allowed modes can be restricted to extractive selection, structured transforms, or user-confirmed abstraction. An abstractive checker cannot authorize policy widening; a pass merely allows storage under the already conservative meet.
+
+Multi-token composition lets a compound task combine several purpose-compatible views without inventing a super-token. Because the derived label is the meet of every cited parent, adding tokens cannot widen policy; it only decides which parents are eligible to be cited. If the parent intersection is empty, the service does not guess. It may store the item in a quarantined administrative compartment for review, or require separate scoped derivatives. If a parent expires, a derived item already has an expiry no later than that parent and therefore expires too. A direct user grant can create a new declassification event, but that operation is outside ordinary derivation, requires object-specific confirmation, and is recorded as a new provenance edge.
+
+\subsection{Expiry, deletion, and revocation}
+
+Read-time TTL checks are authoritative. The compactor's role is to reclaim space and reduce residual ciphertext, not to decide whether an item is logically accessible. On expiry, the monitor returns neither payload nor content-derived score. The compactor deletes the item, removes index entries, and updates derivation tombstones. If a whole compartment is expired or revoked, destroying its wrapped key accelerates physical erasure.
+
+Revocation differs from expiry because it may occur before $e_i$. Policy epochs make revocation visible to active queries: label narrowing or deletion increments the relevant epoch, and release revalidates it. An audit record contains the rule and version responsible for the decision. Long-running agent tasks must refresh tokens after their expiry; refresh re-evaluates policy rather than extending the old grant automatically.
+
+\subsection{Policy-aware eviction}
+
+When storage exceeds its soft budget, expired and invalidated items leave first. Remaining candidates are grouped by compartment and derivation dependencies. Evicting a parent whose derived item still exists is allowed only if the derivation record retains a digest and audit metadata sufficient for lineage; deployments requiring re-verification pin the parent instead. The objective in \cref{eq:eviction} uses predicted entitled reuse, safety class, sensitivity cost, staleness, and recomputation cost. All learned scores are advisory. Hard policy constraints---for example, retaining a confirmed allergy until a user-specified date---are explicit and size-accounted.
+
+This policy avoids a subtle conflation. Sensitivity can argue for earlier deletion because storage risk is high; safety criticality can argue for retention because forgetting is harmful. MemScope therefore represents both axes rather than treating ``sensitive'' as automatically retained or evicted. If the budget cannot satisfy hard obligations, the UI reports the conflict and requests a storage/policy decision.
+
+\subsection{Auditing and user controls}
+
+The audit log records token ID, caller certificate digest, purpose, tool, opaque item IDs, decision codes, bytes returned, policy version, and timing. Plaintext query and item content are excluded by default. A user-facing view answers: what was remembered, from which source, why it was used, which tool received it, when it expires, and what derived items depend on it. The user can narrow scope, expire an item, correct content, or revoke a tool. Widening requires a distinct confirmation because it changes the information-flow policy.
+
+\subsection{Failure behavior}
+
+MemScope fails closed on invalid signatures, unknown identities, ambiguous tool chains, stale epochs, malformed labels, empty required intersections, unavailable key material, and attribution-checker failures. Fail-closed behavior can reduce utility, so the system distinguishes policy denial from transient infrastructure failure in local diagnostics while presenting a non-revealing error to untrusted callers. The evaluation measures both denied legitimate requests and attempted violations.
+
+\subsection{Why an OS service}
+
+Application libraries cannot reliably mediate competing apps and tool providers, and prompt instructions place enforcement in the component exposed to prompt injection. An OS service already sees package identities, signing certificates, AppFunction metadata, lifecycle events, storage budgets, and hardware-key APIs. AppSearch's package/schema visibility demonstrates a compatible system-service pattern \citep{android2026visibility}; MemScope adds per-document task semantics and derivation lineage rather than discarding the existing index.

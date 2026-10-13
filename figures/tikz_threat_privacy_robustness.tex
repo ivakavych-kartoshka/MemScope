@@ -1,0 +1,32 @@
+\begin{figure*}[t]
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[node distance=10mm and 15mm]
+  \node[adversary, text width=28mm] (query) {Query attacker\\adaptive probes};
+  \node[adversary, below=of query, text width=28mm] (writer) {Poisoning source\\crafted memories};
+  \node[adversary, below=of writer, text width=28mm] (badtool) {Malicious tool\\export + persistence};
+
+  \node[honest, right=22mm of writer, text width=31mm] (agent) {Untrusted agent\\prompt and planner};
+  \node[shield, right=20mm of agent] (shield) {\small\bfseries MS};
+  \node[defense, above=8mm of shield, text width=27mm] (read) {Read monitor\\scope + TTL};
+  \node[defense, below=8mm of shield, text width=27mm] (write) {Write monitor\\provenance + meet};
+  \node[database, right=20mm of shield] (memory) {Persistent\\memory};
+
+  \node[honest, right=18mm of memory, text width=29mm] (allowed) {Authorized view\\for this task};
+  \node[infra, below=of allowed, text width=29mm] (excluded) {Excluded items\\never ranked};
+
+  \draw[attackflow] (query.east) to[bend left=12] (agent.north west);
+  \draw[attackflow] (writer.east)--(agent.west);
+  \draw[attackflow] (badtool.east) to[bend right=12] (agent.south west);
+  \draw[policyflow] (agent.north east) -- (read.west);
+  \draw[policyflow] (agent.south east) -- (write.west);
+  \draw[policyflow] (read.east) -| (memory.north);
+  \draw[policyflow] (write.east) -| (memory.south);
+  \draw[dataflow] (memory.east)--(allowed.west);
+  \draw[controlflow] (memory.south east) |- node[labelback]{deny / omit} (excluded.west);
+  \draw[controlflow] (excluded.north)--(allowed.south) node[midway,right,font=\scriptsize]{disjoint views};
+\end{tikzpicture}
+}
+\caption{Threat-to-control mapping. Read scoping constrains extraction across purposes and tools; provenance and conservative write admission constrain laundering and some poisoning paths. False but in-scope content and inference from authorized answers remain outside the core guarantee.}
+\label{fig:threat-map}
+\end{figure*}

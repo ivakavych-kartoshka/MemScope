@@ -1,0 +1,38 @@
+\section{AOSP implementation plan}
+\label{sec:implementation}
+
+\subsection{Service and API surface}
+
+The prototype targets an AOSP branch supporting AppSearch PlatformStorage and AppFunctions. A new \texttt{MemScopeManagerService} owns a Binder interface with four principal calls: \texttt{issueTaskToken}, \texttt{queryMemory}, \texttt{putObservation}, and \texttt{putDerivation}. Maintenance calls cover correction, revocation, compaction, export, and policy inspection. Public SDK objects contain opaque IDs and structured explanations; they never expose raw database handles.
+
+The first prototype can avoid invasive AppSearch changes by storing authorization fields in system-owned document properties and restricting the database to the service UID. Queries run through a privileged global session, but only the MemScope service receives results. A later branch can move projection filtering closer to native AppSearch for lower overhead. Comparing these variants separates the benefit of native indexing from the security abstraction itself.
+
+\subsection{Schema}
+
+The document schema contains: item ID; ciphertext blob or encrypted file reference; embedding reference; source package certificate digest; source tool/function ID; acquisition token digest; purpose/app/tool/consumer ID arrays; sensitivity; not-before and expiry; policy epoch; parent IDs and digests; transformation type; state; size; and compact audit counters. Set IDs are device-local keyed hashes to limit disclosure from a raw index image. Integrity tags cover the label, provenance, and ciphertext reference.
+
+Payload encryption uses per-compartment data-encryption keys wrapped by Android Keystore; StrongBox is requested when supported \citep{android2026strongbox}. The design does not assume that StrongBox makes an unlocked authorized read safe from a compromised system service. It protects keys from ordinary application access and raises the cost of offline database theft.
+
+\subsection{Token binding}
+
+AppFunction metadata provides the declared function and schema \citep{android2026appfunctions}. A system interceptor records the calling UID, package certificate, target provider, function identifier, and parent task. The purpose registry maps this tuple to a stable purpose ID. For legacy tools, a mediated adapter supplies equivalent identifiers; an unmediated network endpoint cannot receive a MemScope token.
+
+Tokens use a compact canonical encoding, hardware- or OS-keystore-backed signatures, a 128-bit nonce, and a policy epoch. Verification caches may store positive signature results until token expiry but still check caller/tool binding on every request. Tests cover field mutation, replay, confused-deputy chains, clock rollback, stale epochs, and cross-user Android profiles.
+
+\subsection{Label and attribution engine}
+
+The deterministic propagator is ordinary systems code. The optional semantic verifier is replaceable: lexical coverage for extractive transforms; natural-language inference for abstractive summaries; and a small on-device model for offline operation. Candidate models include the small on-device class named in the source concept. The verifier produces supported/unsupported/uncertain plus cited spans; uncertainty quarantines high-sensitivity items. Model output cannot directly set label fields.
+
+The experimental build logs verifier decisions and a content-free feature vector so that false acceptance and rejection can be audited against human labels. No test split is used to tune production thresholds after reporting begins.
+
+\subsection{Concurrency and recovery}
+
+SQLite/AppSearch transactions associate a snapshot version with parent reads and derived writes. A write-ahead journal records intent before key and index changes. Recovery replays only operations whose integrity and policy epoch remain valid. Token replay state and recent audit roots persist across reboot. Compaction is idempotent: tombstoning, index deletion, ciphertext deletion, and key cleanup can be retried without restoring logical accessibility.
+
+\subsection{Instrumentation}
+
+Latency is divided into Binder, signature, projection, policy recheck, ranking, decryption, and audit components. Energy measurements use device power rails or an external monitor where possible; Android battery counters are reported only with their limitations. Storage accounting separates payload, embeddings, labels, provenance DAG, audit, and index. Thermal state, charging state, background services, model version, and build fingerprint are recorded for each run.
+
+\subsection{Compatibility}
+
+An Agent SDK adapter converts common memory operations---add, search, update, delete---into the MemScope API. Mem0/Letta-style identity namespaces remain a baseline but are not treated as equivalent authorization. Applications unwilling to integrate remain outside complete mediation and cannot claim MemScope protection. The system can expose migration tooling that imports records under a conservative quarantine policy until provenance and scope are assigned.

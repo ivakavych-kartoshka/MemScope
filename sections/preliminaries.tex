@@ -1,0 +1,90 @@
+\section{Preliminaries and notation}
+\label{sec:preliminaries}
+
+\subsection{Principals, purposes, and time}
+
+Let $\Aset$ be the finite set of application identities, each bound to a package name and signing certificate; $\Tset$ the set of tool or AppFunction identities; $\Pset$ a finite purpose vocabulary; and $\Cset$ a set of logical consumers such as an assistant profile or system surface. A task context is
+\begin{equation}
+q=(a_q,t_q,c_q,p_q,\tau_q,n_q),
+\label{eq:query-context}
+\end{equation}
+where $a_q\in\Aset$, $t_q\in\Tset\cup\{\bot\}$, $c_q\in\Cset$, $p_q\in\Pset$, $\tau_q\in\mathbb{T}$ is trusted monotonic time, and $n_q$ is a fresh nonce. The context is carried inside a system-issued token $\kappa_q=\mathsf{Sign}_{K_{\mathrm{iss}}}(q,e_q)$ with token expiry $e_q$.
+
+Purpose is not inferred from the query string at retrieval time. It is selected from application-authored AppFunction metadata, OS task state, and an optional user-visible purpose confirmation. A classifier may recommend a purpose, but cannot mint a token or expand an item label.
+
+\subsection{Memory items and labels}
+
+\begin{definition}[Labeled memory item]
+A memory item is
+\begin{equation}
+m_i=(i,x_i,z_i,\ell_i,h_i),\qquad
+\ell_i=(P_i,A_i,T_i,C_i,s_i,b_i,e_i),
+\label{eq:item}
+\end{equation}
+where $i$ is an immutable identifier, $x_i$ is encrypted content, $z_i$ is provenance, $h_i$ is an integrity digest, $P_i\subseteq\Pset$, $A_i\subseteq\Aset$, $T_i\subseteq\Tset\cup\{\bot\}$, and $C_i\subseteq\Cset$ are authorized sets; $s_i$ is sensitivity in a finite ordered set $\mathbb{S}$; and $b_i,e_i\in\mathbb{T}$ are not-before and expiry times with $b_i<e_i$.
+\end{definition}
+
+Provenance $z_i$ records the source package/certificate, source tool or channel, acquisition token identifier, creation time, cited parent identifiers, transformation type, and content digest. Provenance is immutable except for append-only audit annotations.
+
+\begin{definition}[Authorization]
+For a verified query context $q$, the item authorization predicate is
+\begin{align}
+\Auth(m_i,q) \iff {}& p_q\in P_i \wedge a_q\in A_i \wedge t_q\in T_i \wedge c_q\in C_i \notag\\
+&\wedge b_i\le \tau_q<e_i \wedge \tau_q<e_q \wedge \mathsf{ValidProv}(z_i).
+\label{eq:auth}
+\end{align}
+\end{definition}
+
+Sensitivity is not an independent read grant. It selects encryption, logging, UI, and retention controls after the set-valued authorization test. A deployment may define clearance constraints, but MemScope never treats a high clearance as permission for an unrelated purpose.
+
+\subsection{Order and meet}
+
+For labels $\ell$ and $\ell'$, write $\ell\preceq\ell'$ when $\ell$ is no more permissive: its allowed sets are subsets, its not-before time is no earlier, its expiry is no later, and its sensitivity is at least as restrictive. For source set $S$,
+\begin{equation}
+\Meet(S)=\left(
+\bigcap_{j\in S}P_j,
+\bigcap_{j\in S}A_j,
+\bigcap_{j\in S}T_j,
+\bigcap_{j\in S}C_j,
+\bigvee_{j\in S}s_j,
+\max_{j\in S}b_j,
+\min_{j\in S}e_j
+\right).
+\label{eq:meet}
+\end{equation}
+An empty allowed-set intersection makes the derivation unusable until an explicit, separately authorized relabeling decision occurs. The ordinary derived-write path cannot widen it.
+
+\subsection{Authorized views and ranking}
+
+Given store snapshot $\M_\tau$ and token context $q$, MemScope constructs
+\begin{equation}
+\View(\M_\tau,q)=\{m_i\in\M_\tau:\Auth(m_i,q)\},
+\label{eq:view}
+\end{equation}
+then evaluates a ranker $R(u_q,\View,k)$ over query text or embedding $u_q$. This order matters: filtering a model-generated top-$k$ list after ranking can leak through scores, identifiers, timing, or explanations and may allow unauthorized candidates to displace authorized ones.
+
+\subsection{Notation table}
+
+\begin{table}[t]
+\centering
+\caption{Primary notation.}
+\label{tab:notation}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+Symbol & Meaning \\
+\midrule
+$\M$ & system-owned set of labeled memory items \\
+$m_i,x_i,z_i,\ell_i$ & item, encrypted payload, provenance, and label \\
+$P_i,A_i,T_i,C_i$ & allowed purposes, apps, tools, and consumers \\
+$s_i,b_i,e_i$ & sensitivity, not-before time, and expiry \\
+$q,\kappa_q$ & authenticated task context and signed retrieval token \\
+$\Auth$ & per-item authorization predicate \\
+$\View$ & authorized pre-ranking candidate view \\
+$\Meet$ & conservative derived-label meet \\
+$\DAG$ & source/derivation directed acyclic graph \\
+$B$ & storage budget in bytes \\
+$R$ & pluggable lexical/vector/hybrid ranker \\
+\bottomrule
+\end{tabularx}
+\end{table}

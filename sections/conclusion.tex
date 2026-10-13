@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+MemScope treats mobile-agent memory as an operating-system protection object rather than an application prompt. Each persistent item is bound to provenance, purpose, app/tool consumers, sensitivity, and lifetime; each read is authorized by a task-rooted token before semantic ranking; and each ordinary derivation inherits the meet of its sources' scopes. Retrieval-time expiry separates logical safety from delayed deletion, while policy-aware eviction makes resource pressure explicit without widening authorization.
+
+Under authentic-token, complete-mediation, state-integrity, trusted-time, and ranker-confinement assumptions, the formal model establishes admission soundness, derived-label monotonicity, returned-plaintext cross-scope safety, and expiry safety. It does not establish unrestricted semantic privacy, truthfulness of generated memories, or control after authorized disclosure. Those boundaries are essential to the scientific claim.
+
+The remaining work is empirical: implement the AOSP service, validate mediation, measure phones, reproduce published extraction and poisoning attacks, quantify utility and attribution errors, and replace every placeholder with traceable results. Until that work is complete, MemScope is a rigorously specified system design and evaluation plan, not evidence of achieved attack reduction or mobile performance.

@@ -1,0 +1,28 @@
+\begin{figure*}[t]
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[node distance=8mm and 11mm]
+  \node[infra, text width=29mm] (data) {\textbf{Workloads}\\LoCoMo, LongMemEval, Memora, PA-Bench, multi-app profiles};
+  \node[adversary, below=of data, text width=29mm] (attacks) {\textbf{Stress tests}\\MEXTRA, MINJA, ADAM, SPORE, MemPoison};
+  \node[infra, below=of attacks, text width=29mm] (vars) {\textbf{Factors}\\scope width, TTL, pressure, model, device};
+
+  \node[honest, right=18mm of attacks, text width=33mm] (harness) {\textbf{Matched harness}\\same histories, queries, ranker, seed, and model};
+  \node[honest, right=18mm of data, text width=29mm] (base) {\textbf{Baselines}\\unscoped, namespaces, AppSearch, prompt, GAAP-style};
+  \node[defense, right=18mm of vars, text width=29mm] (ms) {\textbf{MemScope}\\full system + ablations};
+
+  \node[theory, right=21mm of harness, text width=31mm] (metrics) {\textbf{Metrics}\\violations, extraction, utility, latency, energy, bytes, label error};
+  \node[infra, right=of metrics, text width=28mm] (outputs) {\textbf{Outputs}\\raw traces, CIs, Pareto plots, failure cases};
+
+  \draw[dataflow] (data.east)--(harness.north west);
+  \draw[attackflow] (attacks.east)--(harness.west);
+  \draw[controlflow] (vars.east)--(harness.south west);
+  \draw[dataflow] (harness.north east)--(base.west);
+  \draw[policyflow] (harness.south east)--(ms.west);
+  \draw[dataflow] (base.east) -| (metrics.north);
+  \draw[policyflow] (ms.east) -| (metrics.south);
+  \draw[depflow] (metrics.east)--(outputs.west);
+\end{tikzpicture}
+}
+\caption{Preregistered experimental pipeline. Baselines and MemScope receive identical workload and model inputs; only the memory boundary changes. No box in this figure denotes a completed result.}
+\label{fig:experimental-setup}
+\end{figure*}

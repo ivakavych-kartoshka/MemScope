@@ -1,0 +1,105 @@
+\section{Security and performance analysis}
+\label{sec:theory}
+
+\subsection{Assumptions}
+
+\begin{assumption}[Identity and token authenticity]
+Binder caller identity, package signatures, and the AppFunction/tool chain are correctly reported. The issuer's signature is existentially unforgeable for the adversary, nonces/expiries are checked, and token fields cannot be altered without detection.
+\label{ass:token}
+\end{assumption}
+
+\begin{assumption}[Complete mediation]
+All persistent personal-memory reads and writes in the evaluated system traverse MemScope; callers cannot directly access plaintext, compartment keys, or an equivalent shadow store.
+\label{ass:mediation}
+\end{assumption}
+
+\begin{assumption}[State integrity and time]
+Labels, provenance, derivation edges, and policy epochs are integrity-protected; transactions provide the snapshot/version behavior described in \cref{sec:system}; and $\mathsf{Now}()$ is a trusted monotonic clock.
+\label{ass:state}
+\end{assumption}
+
+\begin{assumption}[Ranker confinement]
+The ranker receives only the candidate view provided by MemScope and has no independent plaintext or decryption path. Its output is a subset of its input item identifiers.
+\label{ass:ranker}
+\end{assumption}
+
+These assumptions are test obligations, not environmental facts. \Cref{sec:limitations} gives failure cases when they do not hold.
+
+\begin{lemma}[Meet monotonicity]
+\label{lem:meet}
+For every nonempty parent set $S$ and each $j\in S$, $\Meet(S)\preceq\ell_j$.
+\end{lemma}
+\begin{proof}
+Set intersection is a subset of every operand. The maximum not-before time is no earlier than each operand's time; the minimum expiry is no later; and the sensitivity join is at least as restrictive as every operand. These are exactly the coordinates of $\preceq$.
+\end{proof}
+
+\begin{lemma}[Composition principal]
+\label{lem:compose}
+If Algorithm~\ref{alg:derive} admits a derived item $d$ from a token set $\Gamma$, then $|\Gamma|\ge 1$, every $\kappa\in\Gamma$ shares one composition context $w=(a^*,c^*,p^*)$, and every cited parent is authorized by at least one $\kappa\in\Gamma$. The admission decision does not depend on which token authorized which parent.
+\end{lemma}
+\begin{proof}
+The algorithm rejects unless each token verifies and all verified contexts agree on $a^*$, $c^*$, and $p^*$, so a common $w$ exists. It rejects unless each parent satisfies $\Auth(m_j,q_\kappa)$ for some $\kappa\in\Gamma$. The remaining steps depend only on the parent set and the meet, not on the assignment of tokens to parents.
+\end{proof}
+
+\begin{lemma}[Authorized-view invariant]
+\label{lem:view}
+Under Assumptions~\ref{ass:token}--\ref{ass:state}, every $m\in\View(\M_\tau,q)$ satisfies $\Auth(m,q)$ at the snapshot used for release.
+\end{lemma}
+\begin{proof}
+The result follows from the set comprehension in \cref{eq:view}. Operationally, Algorithm~\ref{alg:retrieve} verifies $q$, applies the predicate to every candidate, and restarts if the policy epoch changes before release. Index projection may add false candidates but cannot bypass the trusted recheck.
+\end{proof}
+
+\begin{theorem}[Retrieval admission soundness]
+\label{thm:admission}
+Under Assumptions~\ref{ass:token}--\ref{ass:ranker}, if Algorithm~\ref{alg:retrieve} returns plaintext for item $m_i$ in response to token $\kappa_q$, then $\Auth(m_i,q)$ holds at the release snapshot.
+\end{theorem}
+\begin{proof}
+See \cref{app:proof-admission}. The proof composes token verification, Lemma~\ref{lem:view}, ranker confinement, epoch revalidation, and authorized-only decryption.
+\end{proof}
+
+\begin{theorem}[Derived-label safety]
+\label{thm:derived}
+Suppose Algorithm~\ref{alg:derive} admits derived item $d$ with nonempty parent set $S$. Then $\ell_d\preceq\ell_j$ for every $j\in S$. Therefore, authorization of $d$ cannot arise from a purpose, app, tool, consumer, or time interval absent from any one parent.
+\end{theorem}
+\begin{proof}
+Algorithm~\ref{alg:derive} admits only if $\ell_d\preceq\Meet(S)$. Lemma~\ref{lem:meet} gives $\Meet(S)\preceq\ell_j$ for each parent. Transitivity yields $\ell_d\preceq\ell_j$. This holds for single- and multi-token admission alike: by Lemma~\ref{lem:compose} the composition principal restricts \emph{which} parents may be cited but leaves the meet, and hence the non-widening guarantee, unchanged.
+\end{proof}
+
+\begin{corollary}[Expiry inheritance]
+\label{cor:expiry-inherit}
+An admitted derived item's expiry is no later than the expiry of every parent, unless a separate, explicitly authorized declassification creates a new item outside Algorithm~\ref{alg:derive}.
+\end{corollary}
+
+\begin{theorem}[Returned-plaintext cross-scope non-disclosure]
+\label{thm:crossscope}
+Let contexts $q_1$ and $q_2$ differ in at least one authorization dimension. Under Assumptions~\ref{ass:token}--\ref{ass:ranker}, an item $m$ with $\Auth(m,q_1)$ and $\neg\Auth(m,q_2)$ is not returned as plaintext by MemScope under $q_2$, including through any chain of ordinary admitted derivations.
+\end{theorem}
+\begin{proof}
+See \cref{app:proof-crossscope}. The direct case follows from Theorem~\ref{thm:admission}; the derived case uses Theorem~\ref{thm:derived} inductively on the acyclic provenance graph.
+\end{proof}
+
+\begin{theorem}[Retrieval-time expiry safety]
+\label{thm:expiry}
+Under Assumptions~\ref{ass:token}--\ref{ass:state}, if trusted time $\tau\ge e_i$, MemScope does not return plaintext $x_i$ under any ordinary retrieval token, regardless of whether physical compaction has deleted the ciphertext.
+\end{theorem}
+\begin{proof}
+At $\tau\ge e_i$, the strict inequality $\tau<e_i$ in \cref{eq:auth} is false. By Theorem~\ref{thm:admission}, returned plaintext must satisfy authorization. Hence $x_i$ cannot be returned. Physical deletion is not used in the argument.
+\end{proof}
+
+\begin{proposition}[Retrieval complexity]
+\label{prop:complexity}
+Let $n$ be the total number of items, $c$ the number emitted by the indexed projection, $d$ embedding dimension, and $k$ requested results. Given an index lookup cost $I(n)$, authorization rechecking is $O(c)$, exact dense scoring is $O(cd)$, and selecting the top $k$ is $O(c\log k)$. Label storage is $O(n(\bar p+\bar a+\bar t+\bar c))$ identifiers before compression, where the bars are mean allowed-set sizes.
+\end{proposition}
+\begin{proof}
+Each candidate has a constant number of hashed set-membership and range checks under indexed/hashed label representations. Dense dot products cost $O(d)$ per authorized candidate, and a size-$k$ heap costs $O(\log k)$ per insertion. The storage bound sums the label-set cardinalities.
+\end{proof}
+
+\begin{remark}[No semantic non-inference]
+Theorem~\ref{thm:crossscope} is an API trace property about returned stored plaintext. It does not say that answers generated from authorized items reveal zero information about an unauthorized attribute. Repeated authorized views may require a mechanism such as DP-MemView \citep{kim2026dpmemview}.
+\end{remark}
+
+\begin{remark}[Attribution checker]
+Theorem~\ref{thm:derived} is about labels, not semantic faithfulness. If a generated summary invents a false statement, a restrictive label does not make the content true. Attribution precision and recall are empirical quantities in \cref{sec:evaluation}.
+\end{remark}
+
+\input{figures/tikz_theory_diagram}

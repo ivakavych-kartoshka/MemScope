@@ -1,0 +1,13 @@
+# Illustrative reference policy; this is not the production Android policy language.
+policy_version: 1
+rules:
+  - id: food_safety_allergy
+    source_classes: [health_record, user_statement]
+    purposes: [health, food_safety]
+    consumers: [primary_assistant]
+    apps: [assistant.pkg, health.pkg]
+    tools: [health.read, restaurant.check, grocery.allergen_check]
+    sensitivity: HEALTH_SENSITIVE
+    max_ttl_days: 365
+    derivation: extractive_or_confirmed
+    retention: safety_pinned_until_expiry

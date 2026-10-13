@@ -1,0 +1,30 @@
+paper_section,page_or_algorithm_or_equation,paper_object,implementation_file,class_or_function_name,test_file,implementation_status,notes
+3.1,p.9 Eq.1,Task context and signed token,src/memscope/data/schemas.py,TaskContext/RetrievalToken,tests/test_tokens.py,implemented,Reference-model identities
+3.2,p.10 Eq.2,Labeled memory item,src/memscope/data/schemas.py,MemoryItem/MemoryLabel/Provenance,tests/test_schemas.py,implemented,Plaintext reference payload only
+3.2,p.10 Eq.3,Authorization predicate,src/memscope/methods/policy.py,authorize,tests/test_policy.py,implemented,Exact set and time checks
+3.3,p.10 Eq.4,Conservative label meet,src/memscope/methods/policy.py,meet_labels,tests/test_policy.py,implemented,Empty parent list rejected
+3.4,p.11 Eq.5,Authorized view,src/memscope/methods/retrieval.py,authorized_view,tests/test_retrieval.py,implemented,Pre-ranking filter
+6.1,p.16 Eq.6,Authorization violations,src/memscope/metrics/core.py,authorization_violations,tests/test_metrics.py,implemented,Synthetic tests
+6.1,p.16 Eq.7,Entitled misses,src/memscope/metrics/core.py,entitled_misses,tests/test_metrics.py,implemented,Synthetic tests
+6.1,p.17 Eq.8,Entitled Recall@k,src/memscope/metrics/core.py,entitled_recall_at_k/entitled_recall_eligible_queries,tests/test_metrics.py,implemented,Empty ground truth excluded by frozen convention; eligible/excluded counts reported
+6.2,p.17 Eq.9,Derived item validity,src/memscope/methods/derivation.py,admit_derivation,tests/test_derivation.py,implemented,Multi-token composition principal; deterministic and attribution checks separated
+6.3,p.17 Eqs.10-11,Storage objective and budget,src/memscope/methods/compaction.py,policy_aware_compact/exact_knapsack_oracle,tests/test_compaction.py,implemented,Greedy online plus small exact oracle
+7.1,p.18 Eq.12,Token attenuation,src/memscope/methods/tokens.py,TokenIssuer.attenuate,tests/test_tokens.py,implemented,Fail-closed reference interpretation
+8,p.22 Algorithm 1,MemScope retrieval,src/memscope/methods/retrieval.py,MemScopeService.retrieve,tests/test_retrieval.py,implemented,Explicit per-item final reauthorization and bounded restart
+8,Algorithm 2,Derived-memory admission,src/memscope/methods/derivation.py,admit_derivation,tests/test_derivation.py,implemented,Multi-token composition; PDF rendering omission documented
+App. C,pp.40-41 scheduling example,Cross-token derivation with disjoint tool sets,src/memscope/methods/derivation.py,admit_derivation,tests/test_derivation.py,implemented,Composed under one principal; empty required tool scope quarantines (fails closed)
+8,Algorithm 3,Policy-aware compaction,src/memscope/methods/compaction.py,policy_aware_compact,tests/test_compaction.py,implemented,No approximation ratio claimed
+10,pp.26-27,AOSP service/AppSearch/Keystore,src/memscope/adapters/android.py,AndroidServiceAdapter,tests/test_adapters.py,adapter_stub_waiting_for_external_dependency,Requires AOSP branch and device
+11.3,p.30,LoCoMo/LongMemEval/Memora/PA-Bench,src/memscope/data/adapters.py,JsonlBenchmarkAdapter,tests/test_adapters.py,adapter_stub_waiting_for_external_dependency,No data downloaded
+11.3,p.30,Multi-app synthetic profiles,src/memscope/data/synthetic.py,generate_synthetic_scenario,tests/test_synthetic_data.py,implemented_with_synthetic_demo,Explicitly non-paper output
+11.4,p.30,Attack artifacts,src/memscope/adapters/attacks.py,ExternalAttackAdapter,tests/test_adapters.py,adapter_stub_waiting_for_external_dependency,MEXTRA ADAM SPORE MINJA MemPoison
+11.5,p.31,Unscoped baseline,src/memscope/baselines/simple.py,UnscopedBaseline,tests/test_baselines.py,implemented,Same lexical ranker
+11.5,p.31,Namespace baseline,src/memscope/baselines/simple.py,NamespaceBaseline,tests/test_baselines.py,implemented,No purpose or tool policy
+11.5,p.31,Prompt-only baseline,src/memscope/baselines/simple.py,PromptOnlyBaseline,tests/test_baselines.py,implemented,Policy text is non-enforcing
+11.5,p.31,AppSearch visibility baseline,src/memscope/baselines/external.py,AppSearchVisibilityBaseline,tests/test_adapters.py,adapter_stub_waiting_for_external_dependency,Android-only
+11.5,p.31,GAAP/Audience-Bound/MNC baselines,src/memscope/baselines/external.py,ExternalBaseline,tests/test_adapters.py,adapter_stub_waiting_for_external_dependency,No external API invented
+11.7,p.32,Security utility systems label metrics,src/memscope/metrics/core.py,evaluate_queries/label_metrics/latency_summary,tests/test_metrics.py,implemented_with_synthetic_demo,Device-only metrics remain fields/adapters
+11.8,p.32,Wilson bootstrap Holm statistics,src/memscope/metrics/statistics.py,wilson_interval/bootstrap_median_ci/holm_adjust,tests/test_statistics.py,implemented,Synthetic/unit data only
+App. B,Table B.5,Evaluation matrix,configs/experiment_template.yaml,n/a,tests/test_config.py,implemented_with_synthetic_demo,Real cells remain pending
+App. C,Policy examples,Illustrative policy fragment,configs/policies.example.yaml,n/a,tests/test_config.py,implemented_with_synthetic_demo,Illustrative schema validated by loader
+App. D,Security suite/property tests,Formal and security test obligations,tests/test_properties.py,test_meet_monotonicity_property,tests/test_properties.py,implemented,Synthetic finite-policy checks

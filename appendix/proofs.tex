@@ -1,0 +1,94 @@
+\section{Detailed proofs and model boundaries}
+\label{app:proofs}
+
+\subsection{Auxiliary definitions}
+
+For an execution trace $\pi$, let $\mathsf{release}(i,q,v)$ denote a MemScope API event returning plaintext value $v=x_i$ for item $i$ under verified context $q$. Internal index hits, ciphertext reads, and authorization denials are not release events. Let $\mathsf{epoch}(q,t)$ be the applicable policy epoch at time $t$. A release is \emph{snapshot-consistent} when all authorization fields and the final epoch check refer to one serializable state.
+
+Define the coordinate order $\preceq$ precisely. For
+\[
+\ell=(P,A,T,C,s,b,e),\qquad \ell'=(P',A',T',C',s',b',e'),
+\]
+we have $\ell\preceq\ell'$ iff
+\[
+P\subseteq P',\ A\subseteq A',\ T\subseteq T',\ C\subseteq C',\ s\succeq_{\mathbb S}s',\ b\ge b',\ e\le e'.
+\]
+Here $s\succeq_{\mathbb S}s'$ means that $s$ requires controls at least as restrictive as $s'$. The order is reflexive and transitive because subset inclusion and the scalar orders are reflexive and transitive coordinatewise.
+
+\subsection{Retrieval admission soundness}
+\label{app:proof-admission}
+
+\begin{proof}[Full proof of Theorem~\ref{thm:admission}]
+Consider a successful release event $\mathsf{release}(i,q,x_i)$. By Algorithm~\ref{alg:retrieve}, execution reaches decryption only after $\mathsf{VerifyToken}$ succeeds. Assumption~\ref{ass:token} implies that $q$ is the context signed by the trusted issuer and is bound to the actual caller and tool chain; the adversary has not substituted an app, tool, consumer, purpose, expiry, or policy epoch.
+
+The index produces candidate set $C$. Its correctness is not required for safety: an under-approximation can hurt utility, and an over-approximation can increase work. For item $i$ to enter list $A$, the trusted monitor explicitly evaluates $\Auth(m_i,q)$ and the integrity check. By Assumption~\ref{ass:state}, the checked label and provenance are the integrity-protected values associated with $m_i$.
+
+By Assumption~\ref{ass:ranker}, ranking returns only identifiers contained in $A$; therefore $i\in A$. Before decryption, Algorithm~\ref{alg:retrieve} compares the current policy epoch and token time with the values validated for the query. If they changed, the algorithm restarts and the considered execution is not the successful release. Hence the release uses a snapshot in which $\Auth(m_i,q)$ held. Finally, \texttt{DecryptAuthorized} accepts only the already selected identifiers and checks their authenticated label/ciphertext binding. Thus successful plaintext release implies $\Auth(m_i,q)$ at the release snapshot.
+
+The argument relies on complete mediation: without Assumption~\ref{ass:mediation}, a caller might obtain $x_i$ from a shadow store without producing a MemScope release event. The theorem does not speak about that path.
+\end{proof}
+
+\subsection{Derived-label safety over a DAG}
+
+\begin{lemma}[Path monotonicity]
+\label{lem:path}
+If $v_0\to v_1\to\cdots\to v_r$ is a path of ordinary admitted derivations in $\DAG$, then $\ell_{v_r}\preceq\ell_{v_0}$.
+\end{lemma}
+\begin{proof}
+For each edge $v_{j-1}\to v_j$, Theorem~\ref{thm:derived} gives $\ell_{v_j}\preceq\ell_{v_{j-1}}$. Repeated transitivity proves the claim.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:compose}]
+An admitted call first rejects an empty $\Gamma$ or an empty parent set. It then verifies every token in $\Gamma$ and computes $w=\mathsf{ComposeContext}(\cdot)$, which returns $\bot$ unless all verified contexts share the same $a^*$, $c^*$, and $p^*$; admission therefore requires a single shared composition context. It next requires, for every $m_j\in M_S$, some $\kappa\in\Gamma$ with $\Auth(m_j,q_\kappa)$; otherwise the call rejects. The remaining steps---atomic parent read, proposed-label order check, empty-required-scope quarantine, attribution, and provenance construction---depend only on $M_S$, $\hat\ell$, the meet, and the attribution result, none of which reads the token-to-parent assignment. Hence admission is independent of that assignment.
+\end{proof}
+
+\begin{proof}[Expanded proof of Theorem~\ref{thm:derived}]
+An admitted call passed the label check of Algorithm~\ref{alg:derive}, so all parents were read in one snapshot and the proposed label satisfied $\ell_d\preceq\ell^*$, with $\ell^*=\Meet(S)$. For each parent $j$, intersection gives $P^*\subseteq P_j$, $A^*\subseteq A_j$, $T^*\subseteq T_j$, and $C^*\subseteq C_j$; $b^*=\max b_j\ge b_j$; $e^*=\min e_j\le e_j$; and $s^*=\bigvee s_j\succeq s_j$. Thus $\ell^*\preceq\ell_j$. Transitivity yields $\ell_d\preceq\ell_j$. The argument is unchanged by multi-token composition, which by Lemma~\ref{lem:compose} only constrains which parents may be cited. This proof is independent of the semantic verifier's accuracy: the verifier is necessary for content integrity, but label non-widening follows from deterministic checks.
+\end{proof}
+
+\subsection{Cross-scope returned-plaintext safety}
+\label{app:proof-crossscope}
+
+\begin{proof}[Full proof of Theorem~\ref{thm:crossscope}]
+First consider direct retrieval of $m$ under $q_2$. If the service returned $x_m$, Theorem~\ref{thm:admission} would imply $\Auth(m,q_2)$, contradicting the premise $\neg\Auth(m,q_2)$. Hence no direct release occurs.
+
+Now suppose a caller attempts to obtain the same stored content through an ordinary derived item $d$ that cites $m$ directly or transitively. Because $\DAG$ is acyclic and finite at every store snapshot, the ancestor relation has finite paths. Lemma~\ref{lem:path} gives $\ell_d\preceq\ell_m$. The authorization predicate is monotone with respect to restrictiveness: if $\ell_d\preceq\ell_m$ and $q_2$ is unauthorized for $m$, then $q_2$ cannot become authorized for $d$ through a set or time coordinate that was absent from $m$. Sensitivity adds controls but never grants access. Therefore $\neg\Auth(d,q_2)$ for the coordinate responsible for the original denial. Applying Theorem~\ref{thm:admission} again rules out release of $x_d$ under $q_2$.
+
+The theorem refers to stored plaintext and ordinary derivations. A separately authorized declassification is a new policy event and lies outside the premise. Likewise, a model might infer or paraphrase a related fact from other authorized items; that is not a release of $m$ or a descendant governed by this proof.
+\end{proof}
+
+\subsection{Expiry under races}
+
+\begin{lemma}[Final-check freshness]
+If a token or item expires after candidate filtering but before final release, the release does not occur under the expired snapshot.
+\end{lemma}
+\begin{proof}
+Algorithm~\ref{alg:retrieve} first checks the policy epoch and token time, then performs an explicit per-item release reauthorization loop that rechecks $\mathsf{IntegrityOK}(m)$, $\Auth(m,q)$, and item expiry $\mathsf{Now}()<e_m$ at the release snapshot immediately before decryption. A failed item check triggers a bounded restart or denial; a persistence/version mismatch likewise restarts. Trusted monotonic time prevents rollback from making an expired interval current again.
+\end{proof}
+
+\begin{proof}[Expanded proof of Theorem~\ref{thm:expiry}]
+For all contexts $q$ at trusted time $\tau\ge e_i$, the conjunct $\tau<e_i$ is false. Thus $\Auth(m_i,q)$ is false. Theorem~\ref{thm:admission} excludes a release. If expiry races with an in-flight query, the final-check lemma excludes release after expiry. Ciphertext may remain until compaction, but Assumption~\ref{ass:mediation} denies callers a separate decryption path.
+\end{proof}
+
+\subsection{Countermodels when assumptions fail}
+
+\paragraph{Forged or confused token.}
+If a shopping tool can present a token bound to a health tool, an item restricted only by the claimed token fields can be returned. Caller/tool-chain binding in Assumption~\ref{ass:token} is therefore necessary.
+
+\paragraph{Shadow memory.}
+If the application copies an authorized health item into a private unscoped vector store, a later shopping task may retrieve it without MemScope. This violates Assumption~\ref{ass:mediation}, not the authorization predicate.
+
+\paragraph{Clock rollback.}
+If the clock can move from $\tau\ge e_i$ back to $\tau'<e_i$, read-time TTL alone may re-authorize the item. A trusted monotonic clock or securely persisted high-water mark is required.
+
+\paragraph{Ranker with direct store access.}
+A reranker that fetches arbitrary payloads by ID can bypass the candidate view. Assumption~\ref{ass:ranker} therefore requires process/API confinement, not merely an instruction to respect IDs.
+
+\paragraph{Authorized semantic inference.}
+Let two authorized items state a person's recurring clinic location and appointment specialty. A model may infer a diagnosis not present as a stored item. All MemScope checks can succeed while the inferred attribute leaks. This is why the theorem is not semantic noninterference.
+
+\subsection{Complexity details}
+
+If allowed sets are stored as sorted arrays, a check costs logarithmic time in each set size; keyed hash sets give expected constant time with additional space. The $O(c)$ statement in Proposition~\ref{prop:complexity} assumes the latter or bounded set cardinalities. A bitmap representation yields $O(1)$ membership and compact storage for small static vocabularies. Token signature verification is $O(1)$ in the number of memory items but may dominate small queries; caching verified token digests changes constants, not the asymptotic bound.
+
+Compaction's greedy sort costs $O(n\log n)$, or $O(n)$ expected time with bucketed priorities. Exact 0--1 knapsack is pseudo-polynomial in budget and inappropriate for the online path; it serves only as an offline oracle for small evaluation instances. No approximation ratio is claimed for the multi-factor heuristic.

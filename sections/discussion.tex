@@ -1,0 +1,32 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Policy provenance is as important as data provenance}
+
+A label can be internally consistent yet socially wrong. MemScope therefore records which manifest, user choice, enterprise rule, and OS default produced each dimension. Review interfaces should display this policy provenance next to data provenance. When policy changes, the system can identify affected items and derived descendants rather than relabeling an undifferentiated store.
+
+Contextual integrity is useful here because it frames privacy as appropriate flow among actors, attributes, and transmission principles, not simply secrecy \citep{nissenbaum2010privacy}. MemScope implements only a machine-checkable approximation. User studies are needed to learn whether purpose names and tool identities are understandable, whether defaults match expectations, and how often prompts for ambiguous compound tasks create fatigue.
+
+\subsection{Interaction with information-flow control}
+
+MemScope protects admission into model context. A whole-agent IFC system can continue tracking data after admission and constrain tool output, as GAAP motivates \citep{stanley2026gaap}. Combining the two yields defense in depth: MemScope minimizes the data entering the agent; downstream IFC constrains where authorized data may flow. The composition still needs an explicit declassification boundary for useful responses and cannot ignore implicit/model-mediated flows \citep{sabelfeld2003language}.
+
+\subsection{Inference and aggregation}
+
+An item-level policy may allow several innocuous facts whose combination reveals a protected attribute. A derivation meet prevents a stored summary from being broader than its cited parents, but it does not stop the response model from making an inference transiently or an adversary from accumulating answers. DP-MemView's per-attribute ledgers illustrate a complementary approach \citep{kim2026dpmemview}. A future MemScope extension could meter views by sensitive attribute, but doing so changes both the formal model and utility objective and is not claimed here.
+
+\subsection{Purpose granularity}
+
+Purposes that are too broad collapse to ordinary access control; purposes that are too narrow cause repeated denials and user prompts. The evaluation's scope-width sweep should therefore be treated as a design study, not merely a security benchmark. A hierarchical purpose vocabulary may allow a policy to name ``scheduling'' while a token selects ``schedule-medical-appointment.'' Inheritance must be explicit: membership in a child purpose does not automatically grant siblings.
+
+\subsection{Deletion semantics}
+
+Logical expiry is enforceable at the service boundary; physical deletion is more complicated because flash translation layers, backups, audit replicas, and authorized external recipients may retain copies. MemScope reports distinct states---inaccessible, tombstoned, ciphertext deleted, and key destroyed---rather than calling all of them ``forgotten.'' This terminology avoids borrowing Vanish's all-copies objective \citep{geambasu2009vanish} without its cryptographic/distributed assumptions.
+
+\subsection{Deployment paths}
+
+The narrowest deployment is a privileged prototype used by one research agent. A platform deployment could expose MemScope as a Mainline-compatible service. Enterprise deployment can add administrator policies but must preserve user visibility and avoid converting memory governance into hidden surveillance. Application-only emulation is useful for experiments, yet it cannot claim OS-level complete mediation.
+
+\subsection{Novelty boundary after concurrent work}
+
+The 2026 literature materially narrows novelty. Audience-Bound Memory already demonstrates lifecycle authorization and restrictive derivation by audience \citep{liu2026audience}; MNC already binds disclosures to purpose and lifetime \citep{xu2026mnc}; GAAP already enforces agent data policies outside the model \citep{stanley2026gaap}. The defensible MemScope contribution is their systems intersection with Android identities, per-document pre-ranking views, mobile lifecycle/eviction, and phone measurements. If a newer paper demonstrates that same combination before submission, the manuscript must reposition as an implementation/evaluation study rather than claim conceptual novelty.

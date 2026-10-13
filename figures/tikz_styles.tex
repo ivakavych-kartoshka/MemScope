@@ -1,0 +1,20 @@
+% Shared MemScope figure grammar. Pure TikZ icons avoid external font dependencies.
+\tikzset{
+  msbox/.style={draw=msgray, rounded corners=2pt, very thick, fill=white, align=center, minimum height=9mm, text width=27mm, font=\small},
+  honest/.style={msbox, draw=msblue, fill=msblue!8},
+  defense/.style={msbox, draw=msgreen, fill=msgreen!10},
+  adversary/.style={msbox, draw=msorange, fill=msorange!10, dashed},
+  theory/.style={msbox, draw=mspurple, fill=mspurple!9},
+  infra/.style={msbox, draw=msgray, fill=msgray!8},
+  dataflow/.style={-{Stealth[length=2.4mm]}, very thick, draw=msblue, shorten >=2pt, shorten <=2pt},
+  controlflow/.style={-{Stealth[length=2.4mm]}, thick, draw=msgray, dashed, shorten >=2pt, shorten <=2pt},
+  policyflow/.style={-{Stealth[length=2.4mm]}, very thick, draw=msgreen, shorten >=2pt, shorten <=2pt},
+  attackflow/.style={-{Stealth[length=2.4mm]}, very thick, draw=msorange, densely dashed, shorten >=2pt, shorten <=2pt},
+  depflow/.style={-{Stealth[length=2.1mm]}, thick, draw=mspurple, shorten >=2pt, shorten <=2pt},
+  labelback/.style={fill=white, inner sep=1.3pt, font=\scriptsize},
+  group/.style={draw=msgray!65, rounded corners=4pt, dashed, fill=mslight, fill opacity=.45, text opacity=1, inner sep=5pt},
+  stage/.style={circle, draw=msblue, fill=msblue, text=white, font=\bfseries\small, minimum size=6mm, inner sep=0pt},
+  database/.style={cylinder, shape border rotate=90, aspect=.28, draw=msgray, very thick, fill=msgray!8, align=center, minimum height=12mm, minimum width=21mm, font=\small},
+  shield/.style={regular polygon, regular polygon sides=5, shape border rotate=180, draw=msgreen, very thick, fill=msgreen!12, minimum size=11mm},
+  phone/.style={draw=msblue, very thick, rounded corners=3pt, fill=msblue!5, minimum width=34mm, minimum height=57mm},
+}

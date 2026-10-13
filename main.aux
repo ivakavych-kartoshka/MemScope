@@ -1,0 +1,431 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\Newlabel{inst1}{a}
+\citation{packer2023memgpt,zhong2024memorybank,shinn2023reflexion}
+\citation{android2026appsearch,android2026visibility,android2026appfunctions}
+\citation{wang2025mextra}
+\citation{dong2025minja}
+\citation{lyu2026adam}
+\citation{gao2026spore}
+\citation{hu2026toolprivacy}
+\citation{wang2026hijacking,gao2026mempoison,xie2026memevobench}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{2}{Introduction}{section.1}{}}
+\newlabel{sec:introduction@cref}{{[section][1][]1}{[1][2][]2}{}{}{}}
+\citation{zhu2026allergy}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}A purpose-bound service boundary}{3}{subsection.1.1}\protected@file@percent }
+\citation{kim2026dpmemview,dwork2014algorithmic}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Scope and claims}{4}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Contributions}{4}{subsection.1.3}\protected@file@percent }
+\citation{packer2023memgpt}
+\citation{zhong2024memorybank}
+\citation{park2023generativeagents}
+\citation{shinn2023reflexion}
+\citation{lewis2020rag}
+\citation{yao2023react}
+\citation{maharana2024locomo,wu2025longmemeval}
+\citation{uddin2026memora}
+\citation{selvam2026profilefoundry}
+\citation{zhang2018personachat}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Paper organization}{5}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{5}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{5}{Related Work}{section.2}{}}
+\newlabel{sec:related@cref}{{[section][2][]2}{[1][5][]5}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Long-term memory for language agents}{5}{subsection.2.1}\protected@file@percent }
+\citation{zhang2026mobilearchitectures}
+\citation{liu2025mobimem}
+\citation{zhu2026allergy}
+\citation{liu2026audience}
+\citation{xu2026mnc}
+\citation{li2025maas}
+\citation{stanley2026gaap}
+\citation{lam2026ssgm}
+\citation{liu2026mimemory}
+\citation{chen2026memprivacy}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Closest scope and lifecycle mechanisms}{6}{subsection.2.2}\protected@file@percent }
+\citation{kim2026dpmemview}
+\citation{dwork2014algorithmic}
+\citation{wang2025mextra}
+\citation{lyu2026adam}
+\citation{gao2026spore}
+\citation{dong2025minja}
+\citation{wang2026hijacking,gao2026mempoison}
+\citation{xie2026memevobench}
+\citation{greshake2023indirect}
+\citation{debenedetti2024agentdojo}
+\citation{ruan2023toolemu}
+\citation{hu2026toolprivacy}
+\citation{gupta2026pisas}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Memory attacks and purpose-bound tool disclosure}{7}{subsection.2.3}\protected@file@percent }
+\citation{denning1976lattice}
+\citation{myers1998decentralized,myers2000privacy}
+\citation{sabelfeld2003language}
+\citation{agrawal2002hippocratic}
+\citation{nissenbaum2010privacy}
+\citation{wang2019riverbed}
+\citation{geambasu2009vanish}
+\citation{android2026appsearch,android2026visibility}
+\citation{android2026appfunctions}
+\citation{android2026strongbox}
+\citation{enck2010taintdroid}
+\citation{arzt2014flowdroid}
+\citation{saltzer1975protection}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Information flow, purpose limitation, and expiry}{8}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Android enforcement points}{8}{subsection.2.5}\protected@file@percent }
+\citation{liu2026audience}
+\citation{xu2026mnc}
+\citation{stanley2026gaap}
+\citation{chen2026memprivacy}
+\citation{liu2026mimemory}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Verified closest-work boundary. A check mark records an explicit mechanism, not an overall quality judgment.}}{9}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:related-comparison}{{1}{9}{Verified closest-work boundary. A check mark records an explicit mechanism, not an overall quality judgment}{table.caption.1}{}}
+\newlabel{tab:related-comparison@cref}{{[table][1][]1}{[1][9][]9}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Positioning summary}{9}{subsection.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Preliminaries and notation}{9}{section.3}\protected@file@percent }
+\newlabel{sec:preliminaries}{{3}{9}{Preliminaries and notation}{section.3}{}}
+\newlabel{sec:preliminaries@cref}{{[section][3][]3}{[1][9][]9}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Principals, purposes, and time}{9}{subsection.3.1}\protected@file@percent }
+\newlabel{eq:query-context}{{1}{9}{Principals, purposes, and time}{equation.1}{}}
+\newlabel{eq:query-context@cref}{{[equation][1][]1}{[1][9][]9}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Memory items and labels}{10}{subsection.3.2}\protected@file@percent }
+\newlabel{eq:item}{{2}{10}{Labeled memory item}{equation.2}{}}
+\newlabel{eq:item@cref}{{[equation][2][]2}{[1][9][]10}{}{}{}}
+\newlabel{eq:auth}{{3}{10}{Authorization}{equation.3}{}}
+\newlabel{eq:auth@cref}{{[equation][3][]3}{[1][10][]10}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Order and meet}{10}{subsection.3.3}\protected@file@percent }
+\newlabel{eq:meet}{{4}{10}{Order and meet}{equation.4}{}}
+\newlabel{eq:meet@cref}{{[equation][4][]4}{[1][10][]10}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Primary notation.}}{11}{table.caption.2}\protected@file@percent }
+\newlabel{tab:notation}{{2}{11}{Primary notation}{table.caption.2}{}}
+\newlabel{tab:notation@cref}{{[table][2][]2}{[1][11][]11}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Authorized views and ranking}{11}{subsection.3.4}\protected@file@percent }
+\newlabel{eq:view}{{5}{11}{Authorized views and ranking}{equation.5}{}}
+\newlabel{eq:view@cref}{{[equation][5][]5}{[1][10][]11}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Notation table}{11}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}System model}{11}{section.4}\protected@file@percent }
+\newlabel{sec:system}{{4}{11}{System model}{section.4}{}}
+\newlabel{sec:system@cref}{{[section][4][]4}{[1][11][]11}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Deployment}{11}{subsection.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces MemScope architecture. The model and tools remain outside the trusted boundary. A task-bound token selects an authorized view before ranking; derived writes use a separate source-cited path. Blue, green, and orange denote ordinary data, trusted enforcement, and adversarially controlled flows, respectively; line style preserves the distinction in grayscale.}}{12}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:architecture}{{1}{12}{MemScope architecture. The model and tools remain outside the trusted boundary. A task-bound token selects an authorized view before ranking; derived writes use a separate source-cited path. Blue, green, and orange denote ordinary data, trusted enforcement, and adversarially controlled flows, respectively; line style preserves the distinction in grayscale}{figure.caption.3}{}}
+\newlabel{fig:architecture@cref}{{[figure][1][]1}{[1][11][]12}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Component responsibilities}{12}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Scoped Store.}{12}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Retrieval Monitor.}{12}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Token Issuer.}{12}{section*.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces MemScope read--derive--maintain pipeline. Numbering fixes the security-critical order: authorization occurs before ranking, and derivation checks occur before a generated item becomes retrievable.}}{13}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:pipeline}{{2}{13}{MemScope read--derive--maintain pipeline. Numbering fixes the security-critical order: authorization occurs before ranking, and derivation checks occur before a generated item becomes retrievable}{figure.caption.9}{}}
+\newlabel{fig:pipeline@cref}{{[figure][2][]2}{[1][13][]13}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Label Propagator.}{13}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Compactor and eviction controller.}{13}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Item lifecycle}{13}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Policy representation}{13}{subsection.4.4}\protected@file@percent }
+\citation{wang2025mextra,lyu2026adam}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Consistency and concurrency}{14}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Threat and privacy model}{14}{section.5}\protected@file@percent }
+\newlabel{sec:threat}{{5}{14}{Threat and privacy model}{section.5}{}}
+\newlabel{sec:threat@cref}{{[section][5][]5}{[1][14][]14}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Trusted computing base}{14}{subsection.5.1}\protected@file@percent }
+\citation{dong2025minja,wang2026hijacking,gao2026mempoison}
+\citation{gao2026spore}
+\citation{hu2026toolprivacy}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Threat-to-control mapping. Read scoping constrains extraction across purposes and tools; provenance and conservative write admission constrain laundering and some poisoning paths. False but in-scope content and inference from authorized answers remain outside the core guarantee.}}{15}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:threat-map}{{3}{15}{Threat-to-control mapping. Read scoping constrains extraction across purposes and tools; provenance and conservative write admission constrain laundering and some poisoning paths. False but in-scope content and inference from authorized answers remain outside the core guarantee}{figure.caption.10}{}}
+\newlabel{fig:threat-map@cref}{{[figure][3][]3}{[1][15][]15}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Adversary classes}{15}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Assets and security goals}{15}{subsection.5.3}\protected@file@percent }
+\citation{geambasu2009vanish}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Explicit non-goals}{16}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Complete mediation assumption}{16}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Problem formulation}{16}{section.6}\protected@file@percent }
+\newlabel{sec:problem}{{6}{16}{Problem formulation}{section.6}{}}
+\newlabel{sec:problem@cref}{{[section][6][]6}{[1][16][]16}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Safety and utility objectives}{16}{subsection.6.1}\protected@file@percent }
+\newlabel{eq:er}{{8}{17}{Safety and utility objectives}{equation.8}{}}
+\newlabel{eq:er@cref}{{[equation][8][]8}{[1][17][]17}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Derived-item safety}{17}{subsection.6.2}\protected@file@percent }
+\newlabel{eq:derived-validity}{{9}{17}{Derived-item safety}{equation.9}{}}
+\newlabel{eq:derived-validity@cref}{{[equation][9][]9}{[1][17][]17}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Storage-budget objective}{18}{subsection.6.3}\protected@file@percent }
+\newlabel{eq:eviction}{{11}{18}{Storage-budget objective}{equation.11}{}}
+\newlabel{eq:eviction@cref}{{[equation][11][]11}{[1][17][]18}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Design requirements}{18}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}MemScope design}{18}{section.7}\protected@file@percent }
+\newlabel{sec:method}{{7}{18}{MemScope design}{section.7}{}}
+\newlabel{sec:method@cref}{{[section][7][]7}{[1][18][]18}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Task-rooted retrieval tokens}{18}{subsection.7.1}\protected@file@percent }
+\citation{android2026appsearch}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Pre-ranking authorization}{19}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Direct writes}{19}{subsection.7.3}\protected@file@percent }
+\citation{uddin2026memora}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Derived writes and attribution}{20}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Expiry, deletion, and revocation}{21}{subsection.7.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Policy-aware eviction}{21}{subsection.7.6}\protected@file@percent }
+\citation{android2026visibility}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}Auditing and user controls}{22}{subsection.7.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.8}Failure behavior}{22}{subsection.7.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9}Why an OS service}{22}{subsection.7.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Algorithms}{22}{section.8}\protected@file@percent }
+\newlabel{sec:algorithm}{{8}{22}{Algorithms}{section.8}{}}
+\newlabel{sec:algorithm@cref}{{[section][8][]8}{[1][22][]22}{}{}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces MemScope retrieval}}{23}{algorithm.1}\protected@file@percent }
+\newlabel{alg:retrieve}{{1}{23}{MemScope retrieval}{algorithm.1}{}}
+\newlabel{alg:retrieve@cref}{{[algorithm][1][]1}{[1][22][]23}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Security and performance analysis}{24}{section.9}\protected@file@percent }
+\newlabel{sec:theory}{{9}{24}{Security and performance analysis}{section.9}{}}
+\newlabel{sec:theory@cref}{{[section][9][]9}{[1][23][]24}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Assumptions}{24}{subsection.9.1}\protected@file@percent }
+\newlabel{ass:token}{{1}{24}{Identity and token authenticity}{assumption.1}{}}
+\newlabel{ass:token@cref}{{[assumption][1][]1}{[1][23][]24}{}{}{}}
+\newlabel{ass:mediation}{{2}{24}{Complete mediation}{assumption.2}{}}
+\newlabel{ass:mediation@cref}{{[assumption][2][]2}{[1][24][]24}{}{}{}}
+\newlabel{ass:state}{{3}{24}{State integrity and time}{assumption.3}{}}
+\newlabel{ass:state@cref}{{[assumption][3][]3}{[1][24][]24}{}{}{}}
+\newlabel{ass:ranker}{{4}{24}{Ranker confinement}{assumption.4}{}}
+\newlabel{ass:ranker@cref}{{[assumption][4][]4}{[1][24][]24}{}{}{}}
+\newlabel{lem:meet}{{1}{24}{Meet monotonicity}{lemma.1}{}}
+\newlabel{lem:meet@cref}{{[lemma][1][]1}{[1][24][]24}{}{}{}}
+\newlabel{lem:compose}{{2}{24}{Composition principal}{lemma.2}{}}
+\newlabel{lem:compose@cref}{{[lemma][2][]2}{[1][24][]24}{}{}{}}
+\newlabel{lem:view}{{3}{25}{Authorized-view invariant}{lemma.3}{}}
+\newlabel{lem:view@cref}{{[lemma][3][]3}{[1][24][]25}{}{}{}}
+\newlabel{thm:admission}{{1}{25}{Retrieval admission soundness}{theorem.1}{}}
+\newlabel{thm:admission@cref}{{[theorem][1][]1}{[1][25][]25}{}{}{}}
+\newlabel{thm:derived}{{2}{25}{Derived-label safety}{theorem.2}{}}
+\newlabel{thm:derived@cref}{{[theorem][2][]2}{[1][25][]25}{}{}{}}
+\newlabel{cor:expiry-inherit}{{1}{25}{Expiry inheritance}{corollary.1}{}}
+\newlabel{cor:expiry-inherit@cref}{{[corollary][1][]1}{[1][25][]25}{}{}{}}
+\newlabel{thm:crossscope}{{3}{25}{Returned-plaintext cross-scope non-disclosure}{theorem.3}{}}
+\newlabel{thm:crossscope@cref}{{[theorem][3][]3}{[1][25][]25}{}{}{}}
+\citation{kim2026dpmemview}
+\newlabel{thm:expiry}{{4}{26}{Retrieval-time expiry safety}{theorem.4}{}}
+\newlabel{thm:expiry@cref}{{[theorem][4][]4}{[1][25][]26}{}{}{}}
+\newlabel{prop:complexity}{{1}{26}{Retrieval complexity}{proposition.1}{}}
+\newlabel{prop:complexity@cref}{{[proposition][1][]1}{[1][26][]26}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}AOSP implementation plan}{26}{section.10}\protected@file@percent }
+\newlabel{sec:implementation}{{10}{26}{AOSP implementation plan}{section.10}{}}
+\newlabel{sec:implementation@cref}{{[section][10][]10}{[1][26][]26}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Service and API surface}{26}{subsection.10.1}\protected@file@percent }
+\citation{android2026strongbox}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Proof dependency map. The routed edges emphasize that interface guarantees depend on explicit trusted-system assumptions; they are not claims about arbitrary model behavior.}}{27}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:theory-deps}{{4}{27}{Proof dependency map. The routed edges emphasize that interface guarantees depend on explicit trusted-system assumptions; they are not claims about arbitrary model behavior}{figure.caption.11}{}}
+\newlabel{fig:theory-deps@cref}{{[figure][4][]4}{[1][26][]27}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Schema}{27}{subsection.10.2}\protected@file@percent }
+\citation{android2026appfunctions}
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Token binding}{28}{subsection.10.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.4}Label and attribution engine}{28}{subsection.10.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.5}Concurrency and recovery}{28}{subsection.10.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.6}Instrumentation}{29}{subsection.10.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.7}Compatibility}{29}{subsection.10.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}Evaluation methodology and pending results}{29}{section.11}\protected@file@percent }
+\newlabel{sec:evaluation}{{11}{29}{Evaluation methodology and pending results}{section.11}{}}
+\newlabel{sec:evaluation@cref}{{[section][11][]11}{[1][29][]29}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.1}Research questions}{29}{subsection.11.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Preregistered experimental pipeline. Baselines and MemScope receive identical workload and model inputs; only the memory boundary changes. No box in this figure denotes a completed result.}}{30}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:experimental-setup}{{5}{30}{Preregistered experimental pipeline. Baselines and MemScope receive identical workload and model inputs; only the memory boundary changes. No box in this figure denotes a completed result}{figure.caption.12}{}}
+\newlabel{fig:experimental-setup@cref}{{[figure][5][]5}{[1][30][]30}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.2}Devices and software}{30}{subsection.11.2}\protected@file@percent }
+\citation{maharana2024locomo}
+\citation{wu2025longmemeval}
+\citation{uddin2026memora}
+\citation{zhu2026allergy}
+\citation{selvam2026profilefoundry}
+\citation{zhang2018personachat}
+\citation{rawles2024androidworld}
+\citation{wang2025mextra}
+\citation{lyu2026adam}
+\citation{gao2026spore}
+\citation{dong2025minja}
+\citation{wang2026hijacking,gao2026mempoison}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.3}Workloads and datasets}{31}{subsection.11.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Long-horizon utility.}{31}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Safety-critical retention.}{31}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Multi-app mobile workload.}{31}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.4}Attacks and stress tests}{31}{subsection.11.4}\protected@file@percent }
+\citation{android2026visibility}
+\citation{stanley2026gaap}
+\citation{liu2026audience,xu2026mnc}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.5}Baselines}{32}{subsection.11.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.6}Factors and ablations}{33}{subsection.11.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.7}Metrics}{33}{subsection.11.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.8}Statistical plan}{33}{subsection.11.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \textbf  {Placeholder / expected trend only; replace with actual experimental results before submission.} No numeric outcomes are populated.}}{34}{table.caption.16}\protected@file@percent }
+\newlabel{tab:pending-security}{{3}{34}{\textbf {Placeholder / expected trend only; replace with actual experimental results before submission.} No numeric outcomes are populated}{table.caption.16}{}}
+\newlabel{tab:pending-security@cref}{{[table][3][]3}{[1][33][]34}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \textbf  {Placeholder / expected trend only; replace with actual experimental results before submission.} Planned mobile overhead decomposition.}}{34}{table.caption.17}\protected@file@percent }
+\newlabel{tab:pending-overhead}{{4}{34}{\textbf {Placeholder / expected trend only; replace with actual experimental results before submission.} Planned mobile overhead decomposition}{table.caption.17}{}}
+\newlabel{tab:pending-overhead@cref}{{[table][4][]4}{[1][34][]34}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.9}Pending result tables}{34}{subsection.11.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.10}Reproducibility checklist}{34}{subsection.11.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12}Discussion}{34}{section.12}\protected@file@percent }
+\newlabel{sec:discussion}{{12}{34}{Discussion}{section.12}{}}
+\newlabel{sec:discussion@cref}{{[section][12][]12}{[1][34][]34}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.1}Policy provenance is as important as data provenance}{34}{subsection.12.1}\protected@file@percent }
+\citation{nissenbaum2010privacy}
+\citation{stanley2026gaap}
+\citation{sabelfeld2003language}
+\citation{kim2026dpmemview}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {Conceptual expected trends, not experimental results.} Coordinates are illustrative only and must be replaced by measurements and uncertainty intervals before submission.}}{35}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:placeholder-trends}{{6}{35}{\textbf {Conceptual expected trends, not experimental results.} Coordinates are illustrative only and must be replaced by measurements and uncertainty intervals before submission}{figure.caption.18}{}}
+\newlabel{fig:placeholder-trends@cref}{{[figure][6][]6}{[1][34][]35}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.2}Interaction with information-flow control}{35}{subsection.12.2}\protected@file@percent }
+\citation{geambasu2009vanish}
+\citation{liu2026audience}
+\citation{xu2026mnc}
+\citation{stanley2026gaap}
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.3}Inference and aggregation}{36}{subsection.12.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.4}Purpose granularity}{36}{subsection.12.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.5}Deletion semantics}{36}{subsection.12.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.6}Deployment paths}{36}{subsection.12.6}\protected@file@percent }
+\citation{kim2026dpmemview,dwork2014algorithmic}
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.7}Novelty boundary after concurrent work}{37}{subsection.12.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {13}Limitations and ethical considerations}{37}{section.13}\protected@file@percent }
+\newlabel{sec:limitations}{{13}{37}{Limitations and ethical considerations}{section.13}{}}
+\newlabel{sec:limitations@cref}{{[section][13][]13}{[1][37][]37}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{No empirical results yet.}{37}{section*.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Trusted computing base.}{37}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Semantic policy specification.}{37}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Authorized-recipient behavior.}{37}{section*.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Inference leakage.}{37}{section*.23}\protected@file@percent }
+\citation{samsung2025keep,microsoft2026recall}
+\@writefile{toc}{\contentsline {paragraph}{Attribution error.}{38}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Availability and side channels.}{38}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hardware and vendor variance.}{38}{section*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Dataset realism and ethics.}{38}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {14}Conclusion}{38}{section.14}\protected@file@percent }
+\newlabel{sec:conclusion}{{14}{38}{Conclusion}{section.14}{}}
+\newlabel{sec:conclusion@cref}{{[section][14][]14}{[1][38][]38}{}{}{}}
+\@writefile{toc}{\let\numberline\tmptocnumberline}
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~A}Detailed proofs and model boundaries}{39}{appendix.A}\protected@file@percent }
+\newlabel{app:proofs}{{Appendix~A}{39}{Detailed proofs and model boundaries}{appendix.A}{}}
+\newlabel{app:proofs@cref}{{[section][1][]Appendix~A}{[1][39][]39}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.1}Auxiliary definitions}{39}{subsection.A.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.2}Retrieval admission soundness}{39}{subsection.A.2}\protected@file@percent }
+\newlabel{app:proof-admission}{{Appendix~A.2}{39}{Retrieval admission soundness}{subsection.A.2}{}}
+\newlabel{app:proof-admission@cref}{{[subsection][2][1]Appendix~A.2}{[1][39][]39}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.3}Derived-label safety over a DAG}{40}{subsection.A.3}\protected@file@percent }
+\newlabel{lem:path}{{4}{40}{Path monotonicity}{lemma.4}{}}
+\newlabel{lem:path@cref}{{[lemma][4][]4}{[1][40][]40}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.4}Cross-scope returned-plaintext safety}{41}{subsection.A.4}\protected@file@percent }
+\newlabel{app:proof-crossscope}{{Appendix~A.4}{41}{Cross-scope returned-plaintext safety}{subsection.A.4}{}}
+\newlabel{app:proof-crossscope@cref}{{[subsection][4][1]Appendix~A.4}{[1][40][]41}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.5}Expiry under races}{41}{subsection.A.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.6}Countermodels when assumptions fail}{42}{subsection.A.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Forged or confused token.}{42}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Shadow memory.}{42}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Clock rollback.}{42}{section*.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Ranker with direct store access.}{42}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Authorized semantic inference.}{42}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~A.7}Complexity details}{42}{subsection.A.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~B}Detailed experimental protocol}{43}{appendix.B}\protected@file@percent }
+\newlabel{app:experiments}{{Appendix~B}{43}{Detailed experimental protocol}{appendix.B}{}}
+\newlabel{app:experiments@cref}{{[section][2][]Appendix~B}{[1][42][]43}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.1}Episode construction}{43}{subsection.B.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.2}Attack adaptation rules}{43}{subsection.B.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.3}Policy annotation reliability}{43}{subsection.B.3}\protected@file@percent }
+\citation{liu2025mobimem}
+\citation{hu2026toolprivacy}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.4}Microbenchmarks}{44}{subsection.B.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.5}End-to-end tasks}{44}{subsection.B.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.6}Eviction experiment}{44}{subsection.B.6}\protected@file@percent }
+\gdef \LT@i {\LT@entry 
+    {1}{78.29929pt}\LT@entry 
+    {1}{86.10095pt}\LT@entry 
+    {1}{89.99881pt}\LT@entry 
+    {1}{113.39786pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.7}Derivation corpus}{45}{subsection.B.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.8}Planned experiment matrix}{45}{subsection.B.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {B.5}{\ignorespaces Planned evaluation matrix. Every cell is pending implementation.}}{45}{table.5}\protected@file@percent }
+\newlabel{tab:experiment-matrix}{{B.5}{45}{Planned evaluation matrix. Every cell is pending implementation}{table.5}{}}
+\newlabel{tab:experiment-matrix@cref}{{[table][5][]B.5}{[1][45][]45}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~B.9}Result-release policy}{46}{subsection.B.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~C}Policy and trace examples}{46}{appendix.C}\protected@file@percent }
+\newlabel{app:policy}{{Appendix~C}{46}{Policy and trace examples}{appendix.C}{}}
+\newlabel{app:policy@cref}{{[section][3][]Appendix~C}{[1][46][]46}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.1}Scheduling example}{46}{subsection.C.1}\protected@file@percent }
+\citation{uddin2026memora}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.2}Shopping versus health}{47}{subsection.C.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.3}Malicious tool persistence}{47}{subsection.C.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.4}Correction and invalidation}{47}{subsection.C.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.5}Illustrative policy fragment}{47}{subsection.C.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~C.6}Frozen policy semantics (v0)}{48}{subsection.C.6}\protected@file@percent }
+\newlabel{app:policy-frozen}{{Appendix~C.6}{48}{Frozen policy semantics (v0)}{subsection.C.6}{}}
+\newlabel{app:policy-frozen@cref}{{[subsection][6][3]Appendix~C.6}{[1][48][]48}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Purpose taxonomy.}{48}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{AppFunction mapping.}{48}{section*.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Precedence.}{48}{section*.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Wildcards.}{49}{section*.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Declassification.}{49}{section*.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~D}Artifact and reproducibility requirements}{49}{appendix.D}\protected@file@percent }
+\newlabel{app:reproducibility}{{Appendix~D}{49}{Artifact and reproducibility requirements}{appendix.D}{}}
+\newlabel{app:reproducibility@cref}{{[section][4][]Appendix~D}{[1][49][]49}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.1}Minimum artifact}{49}{subsection.D.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.2}Security test suite}{49}{subsection.D.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.3}Deterministic formal-model tests}{50}{subsection.D.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.4}Documentation checklist}{50}{subsection.D.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {Appendix~D.5}Ethical release}{50}{subsection.D.5}\protected@file@percent }
+\bibstyle{elsarticle-harv}
+\bibdata{references_verified}
+\bibcite{agrawal2002hippocratic}{{1}{2002}{{Agrawal et~al.}}{{Agrawal, Kiernan, Srikant and Xu}}}
+\bibcite{android2026appfunctions}{{2}{2026a}{{Android Developers}}{{}}}
+\bibcite{android2026appsearch}{{3}{2026b}{{Android Developers}}{{}}}
+\bibcite{android2026visibility}{{4}{2026c}{{Android Developers}}{{}}}
+\bibcite{android2026strongbox}{{5}{2026}{{Android Open Source Project}}{{}}}
+\bibcite{arzt2014flowdroid}{{6}{2014}{{Arzt et~al.}}{{Arzt, Rasthofer, Fritz, Bodden, Bartel, Klein, Traon, Octeau and McDaniel}}}
+\bibcite{chen2026memprivacy}{{7}{2026}{{Chen et~al.}}{{Chen, Zhao, Tang, Wang, Xiong and Li}}}
+\bibcite{debenedetti2024agentdojo}{{8}{2024}{{Debenedetti et~al.}}{{Debenedetti, Zhang, Balunovi{\'c}, Beurer-Kellner, Fischer and Tram{\`e}r}}}
+\bibcite{denning1976lattice}{{9}{1976}{{Denning}}{{}}}
+\bibcite{dong2025minja}{{10}{2025}{{Dong et~al.}}{{Dong, Xu, He, Li, Tang, Liu, Liu and Xiang}}}
+\bibcite{dwork2014algorithmic}{{11}{2014}{{Dwork and Roth}}{{}}}
+\bibcite{enck2010taintdroid}{{12}{2010}{{Enck et~al.}}{{Enck, Gilbert, Chun, Cox, Jung, McDaniel and Sheth}}}
+\bibcite{gao2026mempoison}{{13}{2026a}{{Gao et~al.}}{{Gao, Xia, Zhang, Hong, Lin, Wei, Li and Lu}}}
+\bibcite{gao2026spore}{{14}{2026b}{{Gao et~al.}}{{Gao, Chen, Meng, Wang, Zang, Wang, Li and Guo}}}
+\bibcite{geambasu2009vanish}{{15}{2009}{{Geambasu et~al.}}{{Geambasu, Kohno, Levy and Levy}}}
+\bibcite{greshake2023indirect}{{16}{2023}{{Greshake et~al.}}{{Greshake, Abdelnabi, Mishra, Endres, Holz and Fritz}}}
+\bibcite{gupta2026pisas}{{17}{2026}{{Gupta et~al.}}{{Gupta, Sepahvand, Kumar, Subakan, Gella, No{\"e}l, Taslakian, Bagdasarian and Zantedeschi}}}
+\bibcite{hu2026toolprivacy}{{18}{2026}{{Hu et~al.}}{{Hu, Liu, Meng and Zhao}}}
+\bibcite{kim2026dpmemview}{{19}{2026}{{Kim et~al.}}{{Kim, Min, Edemacu, Choi, Cho and Jang}}}
+\bibcite{lam2026ssgm}{{20}{2026}{{Lam et~al.}}{{Lam, Li, Zhang and Zhao}}}
+\bibcite{lewis2020rag}{{21}{2020}{{Lewis et~al.}}{{Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal, K{\"u}ttler, Lewis, tau Yih, Rockt{\"a}schel, Riedel and Kiela}}}
+\bibcite{li2025maas}{{22}{2025}{{Li}}{{}}}
+\bibcite{liu2026audience}{{23}{2026}{{Liu}}{{}}}
+\bibcite{liu2026mimemory}{{24}{2026}{{Liu et~al.}}{{Liu, Teng, Li, Ni, Lu, Wang, Liu, Wang, Li, Yi, Li, Zhao, Liang, Chen, Chen, Qu, Shao and Luan}}}
+\bibcite{liu2025mobimem}{{25}{2025}{{Liu et~al.}}{{Liu, Zhang, Zhao, Feng, Bai, Feng, Feng, Xia and Chen}}}
+\bibcite{lyu2026adam}{{26}{2026}{{Lyu et~al.}}{{Lyu, He, Wang, Hu, Li, Chen, Li and Chen}}}
+\bibcite{maharana2024locomo}{{27}{2024}{{Maharana et~al.}}{{Maharana, Lee, Tulyakov, Bansal, Barbieri and Fang}}}
+\bibcite{microsoft2026recall}{{28}{2026}{{Microsoft Support}}{{}}}
+\bibcite{myers1998decentralized}{{29}{1998}{{Myers and Liskov}}{{}}}
+\bibcite{myers2000privacy}{{30}{2000}{{Myers and Liskov}}{{}}}
+\bibcite{nissenbaum2010privacy}{{31}{2010}{{Nissenbaum}}{{}}}
+\bibcite{packer2023memgpt}{{32}{2023}{{Packer et~al.}}{{Packer, Wooders, Lin, Fang, Patil, Stoica and Gonzalez}}}
+\bibcite{park2023generativeagents}{{33}{2023}{{Park et~al.}}{{Park, O'Brien, Cai, Morris, Liang and Bernstein}}}
+\bibcite{rawles2024androidworld}{{34}{2024}{{Rawles et~al.}}{{Rawles, Li, Rodriguez, Riva and Lillicrap}}}
+\bibcite{ruan2023toolemu}{{35}{2023}{{Ruan et~al.}}{{Ruan, Dong, Wang, Pitis, Zhou, Ba, Dubois, Maddison and Hashimoto}}}
+\bibcite{sabelfeld2003language}{{36}{2003}{{Sabelfeld and Myers}}{{}}}
+\bibcite{saltzer1975protection}{{37}{1975}{{Saltzer and Schroeder}}{{}}}
+\bibcite{samsung2025keep}{{38}{2025}{{Samsung Newsroom}}{{}}}
+\bibcite{selvam2026profilefoundry}{{39}{2026}{{Selvam and Ghosh}}{{}}}
+\bibcite{shinn2023reflexion}{{40}{2023}{{Shinn et~al.}}{{Shinn, Cassano, Gopinath, Narasimhan and Yao}}}
+\bibcite{stanley2026gaap}{{41}{2026}{{Stanley et~al.}}{{Stanley, Verma, Tsai, Kallas and Kumar}}}
+\bibcite{uddin2026memora}{{42}{2026}{{Uddin et~al.}}{{Uddin, Shubham, Blanco, Baral and Wang}}}
+\bibcite{wang2025mextra}{{43}{2025}{{Wang et~al.}}{{Wang, He, Zeng, Xiang, Xing, Tang and He}}}
+\bibcite{wang2019riverbed}{{44}{2019}{{Wang et~al.}}{{Wang, Ko and Mickens}}}
+\bibcite{wang2026hijacking}{{45}{2026}{{Wang et~al.}}{{Wang, Yang, Chen and Liu}}}
+\bibcite{wu2025longmemeval}{{46}{2025}{{Wu et~al.}}{{Wu, Wang, Yu, Zhang, Chang and Yu}}}
+\bibcite{xie2026memevobench}{{47}{2026}{{Xie et~al.}}{{Xie, Guo, Zhang, Xia, Yang, Ma, Yan and Ren}}}
+\bibcite{xu2026mnc}{{48}{2026}{{Xu et~al.}}{{Xu, Fan, Wang, Li and Liu}}}
+\bibcite{yao2023react}{{49}{2023}{{Yao et~al.}}{{Yao, Zhao, Yu, Du, Shafran, Narasimhan and Cao}}}
+\bibcite{zhang2026mobilearchitectures}{{50}{2026}{{Zhang et~al.}}{{Zhang, Yang and Ouyang}}}
+\bibcite{zhang2018personachat}{{51}{2018}{{Zhang et~al.}}{{Zhang, Dinan, Urbanek, Szlam, Kiela and Weston}}}
+\bibcite{zhong2024memorybank}{{52}{2024}{{Zhong et~al.}}{{Zhong, Guo, Gao, Ye and Wang}}}
+\bibcite{zhu2026allergy}{{53}{2026}{{Zhu et~al.}}{{Zhu, Lin, Wang, Liu, Li and Chen}}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces MemScope derived-memory admission with multi-token composition}}{58}{algorithm.2}\protected@file@percent }
+\newlabel{alg:derive}{{2}{58}{MemScope derived-memory admission with multi-token composition}{algorithm.2}{}}
+\newlabel{alg:derive@cref}{{[algorithm][2][]2}{[1][22][]58}{}{}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces MemScope policy-aware compaction}}{59}{algorithm.3}\protected@file@percent }
+\newlabel{alg:compact}{{3}{59}{MemScope policy-aware compaction}{algorithm.3}{}}
+\newlabel{alg:compact@cref}{{[algorithm][3][]3}{[1][23][]59}{}{}{}}
+\gdef \@abspage@last{59}

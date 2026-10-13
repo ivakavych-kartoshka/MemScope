@@ -1,0 +1,42 @@
+\begin{figure*}[t]
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[node distance=9mm and 13mm]
+  \node[honest, text width=25mm] (user) {\textbf{User / system UI}\\task intent};
+  \node[honest, right=of user, text width=28mm] (agent) {\textbf{Personal agent}\\untrusted model};
+  \node[adversary, above=8mm of agent, text width=27mm] (tool) {\textbf{Third-party tool}\\AppFunction};
+  \node[adversary, below=8mm of agent, text width=27mm] (cloud) {\textbf{Cloud endpoint}\\optional};
+
+  \node[defense, right=18mm of agent, text width=28mm] (issuer) {\textbf{Token issuer}\\app, tool, purpose, TTL};
+  \node[defense, right=of issuer, text width=29mm] (monitor) {\textbf{Retrieval monitor}\\verify, filter, audit};
+  \node[database, right=15mm of monitor] (store) {\textbf{Scoped store}\\ciphertext + labels};
+  \node[defense, above=8mm of store, text width=26mm] (prop) {\textbf{Label propagator}\\meet + attribution};
+  \node[infra, below=8mm of store, text width=25mm] (keys) {\textbf{Keystore}\\compartment keys};
+
+  \draw[dataflow] (user.east) -- node[labelback]{request} (agent.west);
+  \draw[controlflow] (agent.east) -- node[labelback]{task metadata} (issuer.west);
+  \draw[policyflow] (issuer.east) -- node[labelback]{signed token} (monitor.west);
+  \draw[dataflow] (monitor.east) to[bend left=24] node[labelback, above=2pt]{query} (store.west);
+  \draw[dataflow] (store.west) to[bend left=24] node[labelback, below=2pt]{payload} (monitor.east);
+  \draw[dataflow] (monitor.south) -- ++(0,-8mm) -| node[labelback, pos=.28]{ranked view} (agent.south east);
+  \draw[attackflow] (tool.south) -- node[labelback]{crafted output} (agent.north);
+  \draw[attackflow] (agent.south) -- node[labelback]{possible disclosure} (cloud.north);
+  \draw[policyflow] (agent.north east) |- node[labelback, near end]{derived write + source IDs} (prop.west);
+  \draw[policyflow] (prop.south) -- node[labelback, right]{restricted label} (store.north);
+  \draw[controlflow] (keys.north) -- node[labelback, right]{keys} (store.south);
+
+  \begin{scope}[on background layer]
+    \node[group, fit=(issuer)(monitor)(prop)(store)(keys), label={[font=\small\bfseries,text=msgray]above:Android trusted service boundary}] {};
+  \end{scope}
+
+  \node[below=16mm of monitor, font=\scriptsize] (ld) {data/model flow};
+  \node[right=18mm of ld, font=\scriptsize] (lp) {policy/label flow};
+  \node[right=18mm of lp, font=\scriptsize] (la) {adversarial path};
+  \draw[dataflow] ([xshift=-12mm]ld.west)--([xshift=-3mm]ld.west);
+  \draw[policyflow] ([xshift=-12mm]lp.west)--([xshift=-3mm]lp.west);
+  \draw[attackflow] ([xshift=-12mm]la.west)--([xshift=-3mm]la.west);
+\end{tikzpicture}
+}
+\caption{MemScope architecture. The model and tools remain outside the trusted boundary. A task-bound token selects an authorized view before ranking; derived writes use a separate source-cited path. Blue, green, and orange denote ordinary data, trusted enforcement, and adversarially controlled flows, respectively; line style preserves the distinction in grayscale.}
+\label{fig:architecture}
+\end{figure*}

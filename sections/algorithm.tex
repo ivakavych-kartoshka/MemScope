@@ -1,0 +1,82 @@
+\section{Algorithms}
+\label{sec:algorithm}
+
+\begin{algorithm}[t]
+\caption{MemScope retrieval}
+\label{alg:retrieve}
+\begin{algorithmic}[1]
+\Require signed token $\kappa$, query $u$, result limit $k$
+\State $q\gets\mathsf{VerifyToken}(\kappa,\mathsf{BinderCaller},\mathsf{ToolChain})$
+\If{$q=\bot$ or $\mathsf{Now}()\ge q.e_q$} \State \Return $\mathsf{DENY}$ \EndIf
+\State $v\gets\mathsf{PolicyEpoch}(q)$
+\State $C\gets\mathsf{IndexCandidates}(u,\mathsf{Projection}(q))$
+\State $A\gets[\,]$
+\ForAll{$m\in C$}
+  \If{$\mathsf{IntegrityOK}(m)$ and $\Auth(m,q)$}
+    \State append $m$ to $A$
+  \EndIf
+\EndFor
+\State $O\gets\mathsf{Rank}(u,A,k)$
+\ForAll{$m\in O$} \Comment{final per-item release reauthorization}
+  \If{$\neg\mathsf{IntegrityOK}(m)$ \textbf{or} $\neg\Auth(m,q)$ \textbf{or} $\mathsf{Now}()\ge e_m$}
+    \State \Return \Call{Retrieve}{$\kappa,u,k$} \Comment{bounded restart or deny}
+  \EndIf
+\EndFor
+\If{$v\ne\mathsf{PolicyEpoch}(q)$ or $\mathsf{Now}()\ge q.e_q$}
+  \State \Return \Call{Retrieve}{$\kappa,u,k$} \Comment{bounded restart}
+\EndIf
+\State $X\gets\mathsf{DecryptAuthorized}(O,q)$
+\State $\mathsf{Audit}(q,O,\mathsf{ALLOW})$
+\State \Return $X$
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm~\ref{alg:retrieve} performs a redundant authorization check after index filtering because index projection is an optimization, not the trusted policy decision. Production code bounds restarts and returns a transient error during pathological policy churn.
+
+\begin{algorithm}[t]
+\caption{MemScope derived-memory admission with multi-token composition}
+\label{alg:derive}
+\begin{algorithmic}[1]
+\Require token set $\Gamma$, payload $x_d$, parent IDs $S$, proposed label $\hat\ell$, transformation $f$
+\If{$\Gamma=\emptyset$ or $S=\emptyset$} \State \Return $\mathsf{REJECT}$ \EndIf
+\ForAll{$\kappa\in\Gamma$}
+  \State $q_\kappa\gets\mathsf{VerifyToken}(\kappa,\mathsf{BinderCaller},\mathsf{ToolChain})$
+  \If{$q_\kappa=\bot$} \State \Return $\mathsf{REJECT}$ \EndIf
+\EndFor
+\State $w\gets\mathsf{ComposeContext}(\{q_\kappa:\kappa\in\Gamma\})$ \Comment{or $\bot$}
+\If{$w=\bot$} \State \Return $\mathsf{REJECT}$ \EndIf
+\State $M_S\gets\mathsf{ReadParentsAtomically}(S)$
+\If{$|M_S|\ne|S|$} \State \Return $\mathsf{REJECT}$ \EndIf
+\State \textbf{if} $\exists\,m_j\in M_S$ with $\nexists\,\kappa\in\Gamma:\Auth(m_j,q_\kappa)$ \textbf{then} \Return $\mathsf{REJECT}$
+\State $\ell^*\gets\Meet(M_S)$
+\If{$\neg(\hat\ell\preceq\ell^*)$} \State \Return $\mathsf{REJECT}$ \EndIf
+\If{$\mathsf{EmptyRequiredScope}(\ell^*)$} \State \Return $\mathsf{QUARANTINE}$ \EndIf
+\If{$\neg\mathsf{Attributed}(x_d,M_S,f)$} \State \Return $\mathsf{QUARANTINE}$ \EndIf
+\State $z_d\gets\mathsf{DerivationProvenance}(S,f,w,\Gamma)$
+\State \Return $\mathsf{Commit}(x_d,z_d,\hat\ell)$
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm~\ref{alg:derive} composes a \emph{token set} under one trusted composition principal: every token in $\Gamma$ must name the same caller app $a^*$, consumer $c^*$, and purpose $p^*$, and each cited parent need only be authorized by \emph{some} $\kappa\in\Gamma$. Composition therefore assembles views that are already authorized under one task principal and never confers a new tool authority, because the derived label is still the meet of all cited parents. When $|\Gamma|=1$ the rule reduces to single-token admission. The scheduling example in \cref{app:policy} is the disjoint case: two parents visible under separate tokens but with an empty tool intersection, which is committed to quarantine rather than admitted.
+
+\begin{algorithm}[t]
+\caption{MemScope policy-aware compaction}
+\label{alg:compact}
+\begin{algorithmic}[1]
+\Require store $\M$, byte budget $B$, trusted time $\tau$
+\State delete/tombstone every $m_i$ with $\tau\ge e_i$ or explicit revocation
+\State rotate or destroy keys for empty revoked compartments
+\If{$\mathsf{Bytes}(\M)\le B$} \State \Return \EndIf
+\State $H\gets\mathsf{HardPinned}(\M)$
+\If{$\mathsf{Bytes}(H)>B$} \State \Return $\mathsf{RESOURCE\_CONFLICT}$ \EndIf
+\ForAll{$m_i\in\M\setminus H$}
+  \State $\rho_i\gets(\alpha u_i+\beta r_i+\gamma c_i-\delta d_i-\eta g_i)/w_i$
+\EndFor
+\ForAll{$m_i$ in nondecreasing $\rho_i$}
+  \State preserve required lineage metadata; evict $m_i$
+  \If{$\mathsf{Bytes}(\M)\le B$} \State \Return \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+The greedy compactor is a documented approximation to \cref{eq:eviction}, not an optimality claim. An exact knapsack solver can be used offline for small stores as an oracle in evaluation.

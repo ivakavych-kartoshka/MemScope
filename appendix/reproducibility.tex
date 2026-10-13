@@ -1,0 +1,31 @@
+\section{Artifact and reproducibility requirements}
+\label{app:reproducibility}
+
+\subsection{Minimum artifact}
+
+The minimum credible artifact contains source and build instructions for the AOSP service and SDK; a patch against a named AOSP revision; unit and integration tests; a non-rooted demonstration build if feasible; policy examples; the synthetic workload generator; attack adapters; benchmark preparation scripts; and analysis notebooks/scripts. Binary-only release is insufficient for evaluating complete mediation and label propagation.
+
+\subsection{Security test suite}
+
+The suite mutates each token field; replays nonces; swaps package signatures; inserts an unregistered tool; nests a broader child token; races expiry and revocation; rolls the wall clock backward; corrupts labels and provenance; references missing or stale parents; proposes broadened derived labels; bypasses the index projection; forces ranker exceptions; fills the audit partition; exhausts storage with pinned data; reboots during compaction; and attempts a shadow-store bypass. Each test states the expected denial, quarantine, restart, or explicit failure.
+
+\subsection{Deterministic formal-model tests}
+
+Property-based tests generate finite policy lattices, item labels, contexts, and derivation DAGs. They check: admitted items satisfy authorization; meet is below every operand; ordinary derivation never widens any coordinate; expired items are never returned; revocation epochs prevent stale releases; and authorization remains independent of ranking order. Counterexample shrinking produces minimal failing traces.
+
+\subsection{Documentation checklist}
+
+\begin{itemize}[leftmargin=*]
+  \item Exact compiler, JDK, Android SDK/NDK, kernel, AppSearch module, and build flags.
+  \item Exact devices, firmware/build fingerprints, battery condition, and secure-hardware features.
+  \item Model provider/version/date, local model hashes, quantization, prompts, and decoding parameters.
+  \item Dataset versions, licenses, checksums, transformations, exclusions, and policy annotations.
+  \item Attack commit hashes, reproduction status, deviations, and success definitions.
+  \item Raw traces with sensitive/synthetic fields documented; analysis environment and random seeds.
+  \item Figure/table generation commands and a script checking that every plotted point has a source record.
+  \item A limitations file mapping every formal assumption to one or more implementation tests.
+\end{itemize}
+
+\subsection{Ethical release}
+
+Attack adapters should default to synthetic local endpoints, require explicit configuration for any network sink, and avoid credentials. Synthetic person records remain clearly labeled as synthetic. If user-study or real-device personal data is later collected, the artifact must exclude it by default and document consent, retention, de-identification, and access controls.

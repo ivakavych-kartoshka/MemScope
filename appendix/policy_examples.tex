@@ -1,0 +1,52 @@
+\section{Policy and trace examples}
+\label{app:policy}
+
+\subsection{Scheduling example}
+
+Suppose a user asks a messaging agent to propose times for a medical appointment. Calendar item $m_1$ contains free/busy intervals and permits purpose \texttt{scheduling}, apps \{assistant, calendar\}, tools \{calendar.read\}, and a seven-day lifetime. Health item $m_2$ contains a clinic preference and permits purposes \{health, scheduling\}, apps \{assistant, health\}, tools \{health.preference.read\}, and a 90-day lifetime. No single tool is authorized for both items.
+
+The issuer decomposes the task into two tokens that share one composition principal: both name the same caller app \texttt{assistant}, the same consumer, and purpose \texttt{scheduling}, but each enumerates a different active tool. Algorithm~\ref{alg:derive} accepts this token set $\Gamma$. Each parent is authorized by some token ($m_1$ by the calendar token, $m_2$ by the health token), so the composition passes per-parent visibility. A derived proposed-time item citing both sources has app intersection \{assistant\}, purpose intersection \{scheduling\}, tool intersection empty, and expiry no later than seven days. Because the required tool scope is empty, the item reaches the quarantine branch rather than admission: it is stored in a quarantined administrative compartment and is not returned by generic tool retrieval. It becomes ordinarily retrievable only if policy explicitly names a common tool. Composition thus lets the assistant combine the two views while still failing closed on the empty required scope.
+
+\subsection{Shopping versus health}
+
+An allergy item allows purposes \{health, food-safety\} and tools \{health.read, restaurant.check\}. A shopping recommender asks under purpose \texttt{personalized-ads}; authorization fails even when the query embedding is close to the allergy text. Because filtering precedes ranking, the item neither appears in candidates nor displaces entitled shopping preferences. If the user explicitly asks the shopping agent to screen groceries for allergens, the issuer selects \texttt{food-safety} and the approved grocery checker tool; the same app can then receive the item under a different, visible task context.
+
+\subsection{Malicious tool persistence}
+
+A travel tool returns text instructing the model to remember a request to upload all later memories. The direct observation is labeled with source tool \texttt{travel.badtool}, travel purpose, short lifetime, and high integrity risk. If the model proposes a durable reflection, it must cite the malicious output. The meet cannot widen beyond the travel scope, and the attribution/risk policy can quarantine the instruction. Even if admitted, a later health token cannot retrieve it. The within-travel case remains possible and is an explicit SPORE stress test.
+
+\subsection{Correction and invalidation}
+
+At time $t_1$ an item says ``preferred pharmacy is A.'' At $t_2$ the user changes it to B. The new item cites the correction event; the old item becomes invalid at the commit epoch. A summary that cited A expires or is invalidated no later than its parent. Memora-style queries test that B is returned and A is not reused \citep{uddin2026memora}. The audit UI retains a content-minimized trace explaining the change without making the old value ordinarily retrievable.
+
+\subsection{Illustrative policy fragment}
+
+\begin{verbatim}
+rule food_safety_allergy {
+  source_classes = [health_record, user_statement]
+  purposes       = [health, food-safety]
+  consumers      = [primary_assistant]
+  apps           = [assistant_pkg, health_pkg]
+  tools          = [health.read, restaurant.check,
+                    grocery.allergen_check]
+  sensitivity    = health_sensitive
+  max_ttl_days   = 365
+  derivation     = extractive_or_confirmed
+  retention      = safety_pinned_until_expiry
+}
+\end{verbatim}
+
+\subsection{Frozen policy semantics (v0)}
+\label{app:policy-frozen}
+
+The fragment above is illustrative syntax; the semantics below are frozen for the v0 reference model and are the version the reference implementation and evaluation annotate against. A production compiler may choose any encoding provided it preserves these semantics.
+
+\paragraph{Purpose taxonomy.} Purposes are a closed, versioned set of canonical identifiers with fixed definitions: \texttt{scheduling}, \texttt{health}, \texttt{food-safety}, \texttt{communication}, \texttt{navigation}, \texttt{travel}, \texttt{finance}, \texttt{personalized-ads}, and \texttt{system-diagnostics}, plus the untouched administrative purpose \texttt{review}. Each identifier carries a sensitivity floor and a default TTL cap. Unlisted identifiers are rejected at policy-compile time rather than treated as wildcards. Extending the set is a versioned policy change, not a per-task decision.
+
+\paragraph{AppFunction mapping.} Each installed agent declares its AppFunctions and requested memory classes. A manifest-matched action maps deterministically to exactly one purpose through a signed mapping table (for example, calendar-creation maps to \texttt{scheduling}). A compound task is decomposed into subtasks that each receive their own token under one composition principal (\cref{sec:method}); tokens are never merged to synthesize a broader purpose. An unmapped or unusually sensitive action requires explicit user confirmation and yields the narrowest applicable purpose and tool set. A language model may explain a mapping but is never the mapping authority.
+
+\paragraph{Precedence.} Rules are evaluated in a total precedence order: mandatory system/device denial, then enterprise or device-owner policy, then explicit user rules, then agent-declared defaults. An access is permitted only if every level permits it; a single denial at a higher-precedence level is final. Set-valued dimensions are intersected down the order and lifetimes take the minimum cap. Any operation that would \emph{widen} an effective rule requires a distinct, object-specific user confirmation and cannot be granted by an agent or by a lower-precedence rule.
+
+\paragraph{Wildcards.} Wildcards are disabled by default. They are permitted only in signed enterprise or device-owner manifests and are expanded at policy-compile time to the concrete set of installed or registered entities valid at that policy epoch. Expansion is logged and versioned; installing or removing a matching entity re-expands the rule at the next epoch or fails closed. A wildcard never authorizes cross-sensitivity access that the rule does not name explicitly; it cannot select the \texttt{review} compartment or any compartment whose sensitivity floor exceeds the rule's declared sensitivity.
+
+\paragraph{Declassification.} Declassification is a separate, object-specific policy event outside ordinary derivation. The user directly confirms that a named item may be released to a named broader scope; the service records a signed declassification-edge provenance entry in the audit log. Declassification does not silently propagate: a descendant remains bounded by the meet of its cited sources, including the pre-declassification label of the declassified item, unless that descendant is separately declassified. The original restrictive label is retained in provenance so that lineage and audit remain reproducible.

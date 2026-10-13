@@ -1,0 +1,65 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Long-term memory for language agents}
+
+Agent-memory research primarily asks what representation and retrieval policy best sustain behavior over long histories. MemGPT uses virtual-context management and multiple memory tiers \citep{packer2023memgpt}; MemoryBank maintains evolving long-term conversational memory \citep{zhong2024memorybank}; generative agents combine observation, reflection, and planning memories \citep{park2023generativeagents}; and Reflexion writes verbal feedback for later trials \citep{shinn2023reflexion}. Retrieval-augmented generation established the broader pattern of retrieving external evidence before generation \citep{lewis2020rag}, while ReAct couples model reasoning with tool actions \citep{yao2023react}. These designs motivate persistent and derived memory but generally place authorization outside the memory abstraction.
+
+LoCoMo and LongMemEval make multi-session recall, temporal reasoning, updates, and abstention measurable \citep{maharana2024locomo,wu2025longmemeval}. Memora emphasizes invalidated facts and forgetting-aware accuracy \citep{uddin2026memora}. These benchmarks are useful for MemScope's utility side, yet authorization requires an additional ground truth: which purpose and consumer may receive each otherwise relevant answer. ProfileFoundry offers structured synthetic people with explicit provenance for constructing such cases without publishing real personal histories \citep{selvam2026profilefoundry}. PersonaChat supplies controlled persona conversations but must be augmented with multi-app and policy metadata \citep{zhang2018personachat}.
+
+Mobile work sharpens the resource problem. A 2026 workshop study compares memory architectures for mobile agents \citep{zhang2026mobilearchitectures}, while MOBIMEM supplies profile, experience, and action memories and reports on-device retrieval behavior \citep{liu2025mobimem}. PA-Bench demonstrates that future-blind compression can discard safety-critical facts \citep{zhu2026allergy}. MemScope is complementary: it does not propose a new semantic memory representation or ranking model. It inserts an authorization and lifecycle boundary before any chosen ranker and constrains derived representations.
+
+\subsection{Closest scope and lifecycle mechanisms}
+
+Audience-Bound Persistent Memory is the closest lifecycle authorization design. It attaches the recording audience to each item, intersects source audiences for derivations, and authorizes context assembly before model use \citep{liu2026audience}. MemScope adopts the same conservative principle but targets a different principal space and enforcement setting: purpose, source, app, tool, consumer, and lifetime in a system-owned mobile store. The comparison must not be overstated; audience authorization is directly overlapping prior work, not a MemScope invention.
+
+MNC binds declassified inter-agent messages to recipient, purpose, forwarding, lifetime, logging, and memory scopes, then uses a non-LLM monitor for downstream enforcement \citep{xu2026mnc}. MemScope specializes this idea to persistent mobile-agent memory: token issuance is connected to Android task/AppFunction context; authorization precedes ranking; labels survive derivation and compaction; and implementation cost is measured on phones. Memory as a Service proposes independently callable and governable memory modules \citep{li2025maas}; MemScope supplies one concrete OS service and policy model rather than a general collaborative-memory agenda.
+
+GAAP tracks private data through agent tools and persistent stores with information-flow control and does not trust the agent to enforce confidentiality \citep{stanley2026gaap}. MemScope shares the external-monitor principle, but its label dimensions, retrieval view, TTL behavior, and eviction policy are tied to durable on-device memory. SSGM proposes governance controls for evolving memory \citep{lam2026ssgm}; Mi-Memory emphasizes provenance, correction, lifecycle artifacts, and edge/cloud deployment \citep{liu2026mimemory}; and MemPrivacy replaces sensitive spans with local placeholders before cloud-side memory processing \citep{chen2026memprivacy}. These are complementary: governance and redaction do not by themselves define per-task authorization over a phone's persistent store.
+
+DP-MemView protects against cumulative attribute inference by controlling response-conditioning views and charging per-attribute privacy ledgers \citep{kim2026dpmemview}. MemScope's deterministic label check does not imply differential privacy and cannot stop inference from multiple authorized disclosures. The systems can be composed: MemScope can first restrict the eligible item set, then a DP interface can mediate aggregate transcript leakage. We therefore cite differential privacy only as a boundary and possible extension, not as the proposed method \citep{dwork2014algorithmic}.
+
+\subsection{Memory attacks and purpose-bound tool disclosure}
+
+MEXTRA extracts private interactions under black-box access \citep{wang2025mextra}; ADAM uses adaptive queries \citep{lyu2026adam}; and SPORE exploits a malicious tool plus persistent reactivation \citep{gao2026spore}. MINJA injects records through query interactions \citep{dong2025minja}. Two MemPoison works expose complementary write-path risks: triggerable conversational poisoning and composition-aware benchmark cases \citep{wang2026hijacking,gao2026mempoison}. MemEvoBench studies longer-horizon drift under adversarial memories and noisy tool outputs \citep{xie2026memevobench}. MemScope's read monitor directly targets cross-scope extraction, while provenance and derived-write admission partly address injection. It does not claim to detect arbitrary false but in-scope facts.
+
+General tool-agent security work supplies broader stress tests. Indirect prompt injection shows that untrusted retrieved content can redirect an integrated application \citep{greshake2023indirect}; AgentDojo offers a dynamic environment for measuring attacks and defenses \citep{debenedetti2024agentdojo}; and ToolEmu uses an emulated sandbox to expose risky tool behavior \citep{ruan2023toolemu}. ToolPrivacyBench is especially relevant because it assigns purpose-specific, need-to-know atoms to tool trajectories \citep{hu2026toolprivacy}. PiSAs similarly applies contextual integrity to multi-user agent outputs, messages, and memory \citep{gupta2026pisas}. MemScope converts these contextual expectations into store admission checks for the single-owner, multi-app mobile case.
+
+\subsection{Information flow, purpose limitation, and expiry}
+
+Security labels have a long formal lineage. Denning models permitted flows with a lattice \citep{denning1976lattice}; decentralized labels attach owner-specific policies and safe relabeling rules \citep{myers1998decentralized,myers2000privacy}; and language-based IFC distinguishes explicit, implicit, and covert flows \citep{sabelfeld2003language}. MemScope uses a small product lattice only for memory authorization. It neither performs whole-program information-flow tracking nor claims noninterference after plaintext crosses the API boundary.
+
+Purpose limitation predates agent memory. Hippocratic databases treat purpose and consent as data-management concerns \citep{agrawal2002hippocratic}, and contextual integrity evaluates whether a flow's actors, attributes, and transmission principles fit a social context \citep{nissenbaum2010privacy}. Riverbed attaches user policy to data processed by distributed services and isolates compatible policies into universes \citep{wang2019riverbed}. MemScope narrows these ideas to task-scoped retrieval and derived-memory propagation, using OS identities that are available on a phone.
+
+Expiry has both logical and physical meanings. Vanish investigated cryptographic self-destruction after a chosen time \citep{geambasu2009vanish}. MemScope does not inherit Vanish's stronger claim that all external copies become unreadable. Its guarantee is that the trusted service returns no expired plaintext; encrypted compartment deletion is defense in depth for stored copies.
+
+\subsection{Android enforcement points}
+
+Android AppSearch offers local and platform storage, ranking, and explicit sharing; PlatformStorage is hosted in the system service, while schema visibility can name authorized packages \citep{android2026appsearch,android2026visibility}. AppFunctions supplies typed function metadata that can ground tool identity and declared task context \citep{android2026appfunctions}. Hardware-backed Keystore/StrongBox can protect compartment keys from ordinary application access \citep{android2026strongbox}. MemScope extends rather than replaces these mechanisms: per-document purpose/lifetime labels and retrieval tokens are more fine grained than current schema/package visibility.
+
+Prior Android research illustrates both dynamic and static flow tracking. TaintDroid joins multiple runtime tracking granularities across smartphone components \citep{enck2010taintdroid}; FlowDroid statically models Android lifecycle and callback behavior \citep{arzt2014flowdroid}. MemScope avoids continuous taint tracking inside the model. It enforces complete mediation at a deliberately small store interface, following classic least-privilege and complete-mediation principles \citep{saltzer1975protection}.
+
+\subsection{Positioning summary}
+
+\begin{table*}[t]
+\centering
+\caption{Verified closest-work boundary. A check mark records an explicit mechanism, not an overall quality judgment.}
+\label{tab:related-comparison}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+System & Persistent store & Purpose & App/tool identity & Derived-label meet & Retrieval-time TTL & Phone implementation \\
+\midrule
+Audience-Bound Memory \citep{liu2026audience} & \checkmark & -- & -- & \checkmark & lifecycle & -- \\
+MNC \citep{xu2026mnc} & scoped use & \checkmark & recipient/tool scope & message lineage & \checkmark & -- \\
+GAAP \citep{stanley2026gaap} & \checkmark & permissions & \checkmark & IFC labels & policy dependent & -- \\
+MemPrivacy \citep{chen2026memprivacy} & \checkmark & -- & edge/cloud boundary & -- & -- & edge component \\
+Mi-Memory \citep{liu2026mimemory} & \checkmark & governance & deployment artifacts & provenance & correction/forgetting & edge variant \\
+\ms{} (this design) & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & planned AOSP \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+The novelty claim is therefore bounded: MemScope is a proposed Android enforcement point that combines multi-dimensional per-item scope, authenticated task tokens, derived-item meet propagation, retrieval-time expiry, and mobile resource policies. It is not the first scoped memory proposal, the first information-flow monitor, or the first system to propagate a restrictive label.

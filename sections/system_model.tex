@@ -1,0 +1,41 @@
+\section{System model}
+\label{sec:system}
+
+\subsection{Deployment}
+
+MemScope is a privileged Android service in or adjacent to \texttt{system\_server}. The service owns the memory database and exposes a Binder API to enrolled agent applications. The backing index reuses AppSearch query and ranking facilities, but item plaintext, label columns, and compartment keys are not directly accessible to callers. Package identity comes from Binder credentials and signing-certificate verification rather than a caller-provided string. Tool identity comes from the AppFunction invocation chain or a system wrapper for non-AppFunction tools.
+
+\input{figures/tikz_architecture}
+
+An agent task begins when a user or system surface invokes an agent with a typed objective. The token issuer maps the task to a purpose in the installed policy, binds the calling app, consumer, and permitted tools, adds a nonce and short expiry, and signs the context. The agent SDK can request memory with this token but cannot change its fields. The retrieval monitor validates the signature and freshness, filters documents by \cref{eq:auth}, calls the chosen ranker on \cref{eq:view}, decrypts only the returned authorized payloads, and records an audit event.
+
+\subsection{Component responsibilities}
+
+\paragraph{Scoped Store.}
+The store maintains payload ciphertext, an indexable authorization projection, provenance, integrity digests, derivation edges, TTL metadata, and an append-only audit trail. Label columns are authenticated as associated data. Compartments can group items with compatible sharing and sensitivity policies so that key deletion provides coarse physical erasure.
+
+\paragraph{Retrieval Monitor.}
+The monitor is the only plaintext read path. It verifies tokens, constructs authorized views before ranking, enforces result count and query budgets, rate-limits repeated failures, and avoids returning unauthorized identifiers or scores. Audit records refer to opaque item IDs and policy decisions; logging policy prevents the audit stream from becoming a second plaintext store.
+
+\paragraph{Token Issuer.}
+The issuer binds purposes to declared functions and user-visible tasks. Tokens are single-task or short-lived, carry a nonce, and enumerate the tools in play. Nested tool calls require attenuation: a child token is no broader than its parent. Token issuance is a policy decision separate from retrieval relevance.
+
+\paragraph{Label Propagator.}
+The write path distinguishes direct observations from derivations. Direct items receive defaults from source, task, and data-class policies. Derived items cite existing parent IDs and one or more tokens that share a single composition principal. The propagator checks parent existence and per-parent authorization under that token set, computes \cref{eq:meet}, validates the claimed transformation, and rejects caller-proposed labels broader than the computed meet.
+
+\paragraph{Compactor and eviction controller.}
+The controller removes expired ciphertext, rebuilds indexes, rotates compartment keys, and selects eviction candidates under a byte budget. It can prefer retention of authorized safety-critical items, but it cannot extend expiry or grant access. Tombstones and derivation edges prevent a surviving summary from silently losing its lineage.
+
+\subsection{Item lifecycle}
+
+An item moves through \emph{proposed}, \emph{admitted}, \emph{quarantined}, \emph{expired}, \emph{tombstoned}, and \emph{physically compacted} states. Only admitted, unexpired items participate in an authorized view. Quarantined items are unavailable to ordinary retrieval; a local review UI may expose them under a distinct administrative purpose. Logical expiry is instantaneous at the API boundary. Physical deletion is asynchronous and auditable.
+
+\input{figures/tikz_method_pipeline}
+
+\subsection{Policy representation}
+
+Policies are installed manifests signed by the OS, device owner, or enterprise administrator. A rule maps source identities and task metadata to allowed dimensions and lifetime bounds. For example, a calendar availability item may be usable by the scheduling purpose and calendar/messaging tools for 30 days, while a medical item may be restricted to a health purpose and approved health consumer. Rules are combined in a fixed precedence order (mandatory system denial, then enterprise/device-owner, then explicit user rules, then agent defaults), and an access must be permitted at every level. Wildcards are disabled by default: they appear only in signed enterprise/device-owner manifests and are expanded at compile time to the concrete registered set. Purpose identifiers form a closed, versioned taxonomy, and declassification is a separate, object-specific event that does not propagate to descendants. Policy compilation rejects contradictory or unknown-purpose rules and emits a human-readable summary; the frozen v0 semantics appear in \cref{app:policy-frozen}.
+
+\subsection{Consistency and concurrency}
+
+Retrieval operates on a transactionally consistent store snapshot. Token time is checked both before candidate enumeration and before plaintext release. A concurrent expiry, revocation, or label-narrowing event increments a policy epoch; a query whose epoch changed restarts authorization. Derived writes validate all source versions in one transaction. This prevents time-of-check/time-of-use widening without requiring the ranker itself to be trusted.

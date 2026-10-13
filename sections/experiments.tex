@@ -1,0 +1,117 @@
+\section{Evaluation methodology and pending results}
+\label{sec:evaluation}
+
+\textbf{Status.} \placeholder{} The project supplied no MemScope implementation, raw traces, or result files. This section is a preregistered protocol: it states questions, factors, metrics, controls, and analysis before measurements exist. The numbers in \cref{fig:placeholder-trends} are illustrative coordinates only.
+
+\subsection{Research questions}
+
+\begin{description}[leftmargin=13mm,style=nextline]
+  \item[RQ1: Enforcement.] Does MemScope reduce out-of-scope plaintext retrieval and attack extraction yield relative to unscoped memory, namespace scoping, AppSearch visibility, and prompt-only instructions?
+  \item[RQ2: Utility.] What entitled recall and answer accuracy are lost as purpose/app/tool scopes narrow, and where is the privacy--utility Pareto frontier?
+  \item[RQ3: Derivation.] How accurately does source attribution accept faithful summaries and reject unsupported or policy-laundering derivations?
+  \item[RQ4: Lifecycle.] Are expiry, correction, revocation, and invalidation respected across active queries, reboot, compaction delay, and derived-item chains?
+  \item[RQ5: Mobile cost.] What latency, energy, storage, and thermal overhead arises on phones, and which component dominates?
+  \item[RQ6: Retention.] Does policy-aware eviction preserve entitled utility and designated safety-critical facts better than recency, relevance, or size-only eviction under the same byte budget?
+\end{description}
+
+\input{figures/tikz_experimental_setup}
+
+\subsection{Devices and software}
+
+The primary devices are a Pixel 8 and Pixel 9 running the same AOSP branch, plus a recent Samsung flagship for a Knox/StrongBox-class comparison when platform access permits. Every device record includes SoC, RAM, storage, Android build, AppSearch module version, battery health, ambient temperature, and hardware-key capabilities. Experiments run on battery at controlled charge bands and repeat under plugged-in conditions only as a labeled secondary track.
+
+The agent uses a fixed cloud model for end-to-end tasks and a small local model for label/attribution variants. Exact model identifiers, dates, decoding settings, prompts, and API versions are frozen. A model update creates a new experimental stratum. The ranking engine, embeddings, and $k$ are held constant across matched memory-boundary comparisons.
+
+\subsection{Workloads and datasets}
+
+\paragraph{Long-horizon utility.}
+LoCoMo supplies very long conversational histories and question answering \citep{maharana2024locomo}; LongMemEval tests extraction, multi-session and temporal reasoning, updates, and abstention \citep{wu2025longmemeval}; Memora adds invalidated memories and forgetting-aware accuracy \citep{uddin2026memora}. We attach policy labels to each evidence item using a documented annotation protocol. Original benchmark scores remain separately reported so the augmentation does not masquerade as an official task.
+
+\paragraph{Safety-critical retention.}
+The PA-Bench protocol hides future questions during compression and tests whether facts such as allergies survive \citep{zhu2026allergy}. We reproduce the allowed public protocol and add purpose/lifetime annotations. The central comparison holds the byte budget fixed across eviction methods.
+
+\paragraph{Multi-app mobile workload.}
+Synthetic people from ProfileFoundry seed consistent calendar, messaging, shopping, travel, and health histories \citep{selvam2026profilefoundry}. PersonaChat-style dialogue realizes natural interactions \citep{zhang2018personachat}. Each episode has a policy oracle listing entitled consumers for every atom. The workload includes cross-app joins that are authorized, joins requiring separate tokens, updates, revocations, ambiguous purposes, and malicious tool outputs. AndroidWorld can host GUI tasks where license and version compatibility permit \citep{rawles2024androidworld}.
+
+\subsection{Attacks and stress tests}
+
+MEXTRA evaluates black-box extraction \citep{wang2025mextra}; ADAM evaluates adaptive extraction \citep{lyu2026adam}; SPORE evaluates a malicious tool and persistent reactivation \citep{gao2026spore}; MINJA evaluates query-only memory injection \citep{dong2025minja}; and the two MemPoison formulations evaluate triggerable and compositional corruption \citep{wang2026hijacking,gao2026mempoison}. Each attack is run from the authors' released artifact when available and version-pinned. If no artifact exists, a reimplementation is labeled as such and validated on the paper's reported setup before being used against MemScope.
+
+Attack success is stratified into: direct unauthorized item return; model paraphrase attributable to an unauthorized item; unauthorized tool argument; poisoned item admission; poisoned behavior activation; and availability degradation. The formal theorem covers only the first category at the service API. Reporting the categories separately prevents a narrow systems property from being advertised as complete attack prevention.
+
+\subsection{Baselines}
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Unscoped:} one user-level memory with the same ranker and byte budget.
+  \item \textbf{Namespace:} Mem0/Letta-style user/agent/run identifiers, with no purpose or tool label.
+  \item \textbf{AppSearch visibility:} package/schema sharing using official visibility APIs \citep{android2026visibility}.
+  \item \textbf{Prompt-only:} the model is instructed to respect the same textual policy, but the store returns ordinary top-$k$ candidates.
+  \item \textbf{GAAP-style IFC:} an execution monitor tracks private data through tools and persistent state, configured as closely as accessible artifacts allow \citep{stanley2026gaap}. Any deviation from the published system is documented.
+  \item \textbf{Audience-bound/scoped concurrent work:} executable artifacts for Audience-Bound Memory or MNC are included when compatible; otherwise comparison remains analytical, not numerical \citep{liu2026audience,xu2026mnc}.
+\end{enumerate}
+
+All baselines use identical histories, queries, ranker, model calls, seeds, device state, and budgets. If a baseline cannot represent a policy, the experiment reports ``unsupported'' rather than silently approximating it as a denial or success.
+
+\subsection{Factors and ablations}
+
+The factorial core varies: number of items ($10^2$--$10^5$ where feasible); scope width; number of apps/tools; TTL distribution; sensitivity and safety mix; write/read ratio; memory pressure; attack budget; ranking method; local verifier model; and network availability. Ablations remove one label dimension at a time, pre-ranking filtering, token/tool binding, derived-label meet, attribution verification, read-time TTL, epoch revalidation, policy-aware eviction, and compartment encryption.
+
+The critical negative controls intentionally violate assumptions: a shadow cache bypasses MemScope; a stale token is replayed; the attribution checker is replaced with always-accept; and an authorized tool copies plaintext after receipt. These controls should defeat the corresponding guarantee and make its boundary visible.
+
+\subsection{Metrics}
+
+Security metrics are out-of-scope retrieval rate, unique-record extraction yield, sensitive-atom disclosure, poisoned-write acceptance, trigger activation, and queries/tool calls to success. Utility metrics are entitled Recall@$k$, answer exact/F1 or benchmark-specific accuracy, FAMA where applicable, task completion, abstention calibration, and safety-critical fact survival. Systems metrics are median and tail latency, energy per operation/task, CPU/NPU time, thermal throttling, bytes per item, index amplification, compaction pause, and key-operation cost. Label metrics are per-dimension precision/recall, exact-label match, false widening, false narrowing, attribution false acceptance/rejection, and quarantine rate.
+
+\subsection{Statistical plan}
+
+Primary comparisons are paired by workload instance and random seed. Continuous metrics report medians, bootstrap 95\% confidence intervals, and full distributions; bounded success rates report Wilson or exact binomial intervals. Multiple attack/baseline comparisons use a declared family and Holm correction. Effect sizes accompany $p$-values. Device is treated as a block. Runs with thermal throttling are not discarded silently: the preregistered rule either reruns after cooldown or reports a separate throttled stratum.
+
+At least three independent process/device restarts are used for microbenchmarks and enough episode repetitions are chosen from a prospective power analysis based on pilot variance. Pilots are not mixed with final data. All exclusions and failed runs appear in the artifact log.
+
+\subsection{Pending result tables}
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Placeholder / expected trend only; replace with actual experimental results before submission.} No numeric outcomes are populated.}
+\label{tab:pending-security}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+Method & Out-of-scope retrieval & MEXTRA yield & SPORE yield & MINJA admission & Entitled accuracy & p95 latency \\
+\midrule
+Unscoped & pending & pending & pending & pending & pending & pending \\
+Namespace & pending & pending & pending & pending & pending & pending \\
+AppSearch visibility & pending & pending & pending & pending & pending & pending \\
+Prompt-only & pending & pending & pending & pending & pending & pending \\
+GAAP-style & pending & pending & pending & pending & pending & pending \\
+MemScope & pending & pending & pending & pending & pending & pending \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Placeholder / expected trend only; replace with actual experimental results before submission.} Planned mobile overhead decomposition.}
+\label{tab:pending-overhead}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Component & Pixel 8 & Pixel 9 & Samsung \\
+\midrule
+Token verification & pending & pending & pending \\
+Label projection & pending & pending & pending \\
+Policy recheck & pending & pending & pending \\
+Ranking & pending & pending & pending \\
+Decryption/audit & pending & pending & pending \\
+Energy per query & pending & pending & pending \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\input{figures/pgfplots_placeholder_results}
+
+\subsection{Reproducibility checklist}
+
+Before submission the artifact must include AOSP commit and patch series; build manifests; device/build fingerprints; policy schemas and compiled examples; benchmark licenses and preparation hashes; attack artifact versions; model identifiers and prompts; seed lists; raw JSONL traces; analysis scripts; environment lockfiles; figure-generation scripts; power methodology; and a one-command smoke test. Claims in the final abstract and conclusion must be regenerated from machine-readable result summaries, not manually copied from preliminary notebooks.

@@ -1,0 +1,38 @@
+\section{Threat and privacy model}
+\label{sec:threat}
+
+\subsection{Trusted computing base}
+
+We trust the kernel mechanisms that deliver Binder identity, the MemScope service, token-signing code and keys, the policy compiler, the AppSearch-derived storage code that MemScope invokes, trusted monotonic time, and hardware-backed key storage when present. We assume verified boot and ordinary Android sandbox guarantees. These assumptions are substantial and must be tested against the actual prototype; the proof does not survive compromise of this trusted computing base.
+
+The model does not trust the language model, its prompt, an agent application's orchestration logic, retrieved untrusted text, third-party tools, or a cloud memory processor. An agent may be confused, prompt-injected, or intentionally request excessive data. A tool may attempt to export arguments or persist instructions. Other apps may invoke exported surfaces or replay old requests. A stolen database image is considered, but an attacker with an unlocked device plus arbitrary code in the trusted service is out of scope.
+
+\subsection{Adversary classes}
+
+\begin{enumerate}[leftmargin=*]
+  \item A \emph{query adversary} interacts with the assistant and adaptively chooses prompts, following the black-box direction of MEXTRA and ADAM \citep{wang2025mextra,lyu2026adam}.
+  \item A \emph{write-path adversary} injects content through normal conversations, notifications, or tool outputs, following MINJA and memory-poisoning settings \citep{dong2025minja,wang2026hijacking,gao2026mempoison}.
+  \item A \emph{malicious tool} receives calls, returns crafted anchors, and persists reactivation instructions, as in SPORE \citep{gao2026spore}.
+  \item An \emph{over-sharing agent} completes a valid task but supplies a tool with more private information than the task requires, as measured by ToolPrivacyBench \citep{hu2026toolprivacy}.
+  \item A \emph{storage adversary} obtains an offline copy of the memory database but not an unlocked OS service or hardware-backed compartment key.
+\end{enumerate}
+
+\input{figures/tikz_threat_privacy_robustness}
+
+\subsection{Assets and security goals}
+
+The primary asset is plaintext $x_i$ and its sensitive attributes. Metadata such as item existence, size, access frequency, and timing is a secondary asset but receives only partial protection in this design. The main service goal is:
+
+\begin{quote}
+For every successful MemScope read, each returned plaintext item is authorized for the authenticated app, tool, consumer, purpose, and time bound to that read; a derived item is no more permissive than every source used to construct it.
+\end{quote}
+
+Supporting goals are token freshness and attenuation, provenance integrity, retrieval-time expiry, audit completeness, fail-closed label propagation, and confidentiality of offline compartment ciphertext under the platform cryptographic assumptions.
+
+\subsection{Explicit non-goals}
+
+MemScope does not guarantee that an authorized response reveals no fact inferable about an unauthorized item. It does not revoke information already copied by an authorized consumer, eliminate model-provider logging after authorized cloud disclosure, hide all access patterns, prevent screen capture, protect against kernel/TEE compromise, or stop false in-scope memories. It does not automatically determine the socially correct purpose policy. It does not claim that hardware-backed encryption causes every cached copy to vanish, unlike the stronger historical objective explored by Vanish \citep{geambasu2009vanish}. Covert channels and timing leakage are measured where feasible but excluded from the core theorem.
+
+\subsection{Complete mediation assumption}
+
+Every durable personal memory read and write by an enrolled agent must traverse MemScope. This is enforceable only if the evaluation disables or instruments alternative vector stores, caches, logs, and direct cloud-memory APIs. If an application maintains a shadow memory, MemScope cannot govern it. The prototype therefore includes an integration audit and a negative-control build with an intentionally bypassing cache to demonstrate the assumption's necessity.

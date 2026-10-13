@@ -1,0 +1,121 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\setlist{nosep}
+
+\title{MemScope: A Purpose-Bound Memory Service for Mobile Personal Agents\\
+\large Research concept document (not a paper draft)}
+\author{MobiSys 2027 idea repository, Idea 04}
+\date{Compiled 2026-10-03 from a web literature sweep; PROJECT\_FOLDER contained no PDFs}
+
+\begin{document}
+\maketitle
+
+\section{Title}
+MemScope: A Purpose-Bound Memory Service for Mobile Personal Agents.
+
+\section{Primary Target Venue}
+ACM MobiSys 2027. The contribution is an on-device system service (an extension of Android's AppSearch PlatformStorage model) that stores agent memory with purpose, provenance, lifetime, and consumer labels, enforces them at retrieval and eviction, and is measured on phones. MobiSys 2026 accepted MobiMem-style agent memory work and on-device KV-management work but no memory-governance paper; this fills that slot.
+
+\section{Alternative Venues}
+\begin{itemize}
+  \item PETS/PoPETs (\url{https://petsymposium.org}): purpose limitation and contextual integrity framing.
+  \item ACM CCS (\url{https://www.sigsac.org/ccs.html}): access-control model for LLM-derived data.
+  \item USENIX Security (\url{https://www.usenix.org/conferences}): attack evaluation against memory extraction and tool-channel attacks.
+  \item ACM MobiCom (\url{https://www.sigmobile.org/mobicom/}): secondary.
+\end{itemize}
+
+\section{Research Problem}
+How can a phone's persistent agent memory remain useful while the OS enforces, outside the model, that each memory item is retrievable only for the purposes, by the agents, apps, and tools, and for the lifetime consistent with how it was acquired, including items the agent itself derived by summarization?
+
+\section{Why Mobile?}
+The phone already has the primitives and the principals: AppSearch PlatformStorage is a system-wide index with caller-identity by schema-type visibility; AppFunctions give a typed interface for which tool is asking; Samsung's KEEP gives per-app encrypted compartments; AICore is stateless. Memory on a phone is fed by many apps and consumed by many tools under one user, and it is subject to eviction under memory pressure and to compression on-device ("Will My Assistant Remember My Allergy?" shows on-device compression drops safety-critical facts). In the cloud, memory stores are single-tenant per user and the question becomes generic access control (GAAP, MNC), with no app, tool, or eviction dimension and no OS enforcement point.
+
+\section{Motivation}
+Attacks on agent memory are mature (MEXTRA at ACL 2025, MINJA, ADAM, SPORE, MemPoison). PiSAs shows contextual-integrity violations migrate into memory (visibility violations rise from 36-47\% to 63-90\% with hybrid memory). ToolPrivacyBench shows agents over-disclose to tools 19-28\% of the time even when completing tasks. SPORE shows a malicious tool extracts 80\% of records despite user-level isolation. MobiMem (SJTU) ships profile/experience/action memory on Snapdragon with no access control at all. Platform controls stop at app exclusion and retention (Recall), app compartments (Samsung KEEP), per-app toggles (Gemini Personal Intelligence), or caller-by-schema visibility (AppSearch). Nothing scopes by purpose or tool, and nothing governs derived items.
+
+\section{Closest Prior Work}
+\begin{itemize}
+  \item \textbf{Audience-Bound Persistent Memory} (arXiv 2609.36373, Sep 28 2026): lifecycle authorization by who was present when an item was recorded; derived items inherit the intersection of source audiences; synthetic multi-party histories. Closest concurrent work; audience is one dimension, no device, no tool or purpose scoping.
+  \item \textbf{MNC, Scope-Bound Semantic Declassification} (arXiv 2608.01719): scope = recipient, purpose, forwarding, lifetime, logging, memory use; enforced by a non-LLM monitor over inter-agent messages, not a persistent on-device store.
+  \item \textbf{Memory as a Service} (arXiv 2506.22815): position paper proposing purpose-bound memory containers; no implementation.
+  \item \textbf{GAAP} (arXiv 2604.19657, UCLA/Google): IFC runtime over agent tools with persistent stores; deterministic confidentiality; does not treat long-term memory scoping.
+  \item \textbf{MemPrivacy} (arXiv 2605.09530): on-device sensitive-span placeholders for cloud memory; no retrieval-time control.
+  \item \textbf{Mi-Memory} (arXiv 2607.18975, Xiaomi-affiliated): lifecycle memory framework with provenance payloads and an edge variant; governance, not access control.
+  \item \textbf{DP-MemView} (arXiv 2608.03130): DP ledgers against cumulative attribute inference from memory-conditioned responses.
+  \item \textbf{SSGM} (arXiv 2603.11768): unimplemented middleware with ABAC retrieval and provenance.
+  \item \textbf{Attacks}: MEXTRA (ACL 2025), MINJA (arXiv 2503.03704), ADAM (arXiv 2604.09747), SPORE (arXiv 2607.23444), MemPoison (arXiv 2605.29960).
+  \item \textbf{Platform}: AppSearch (\texttt{setSchemaTypeVisibilityForPackage}, permission-gated visibility, no per-document purpose); Samsung KEEP; Microsoft Recall redesign; Gemini Personal Intelligence; AICore stateless.
+  \item \textbf{Classic}: Riverbed (NSDI 2019) policy tags and universes; Vanish (USENIX Security 2009) cryptographic expiry.
+\end{itemize}
+
+\section{Research Gap}
+No enforced purpose $\times$ source $\times$ lifetime $\times$ app $\times$ tool scoping exists for an on-device memory store read by LLM agents. Specifically missing: (1) a reference monitor between a platform index and AppFunctions-calling agents that enforces multi-dimensional labels outside the model; (2) label propagation through LLM summarization and reflection so derived items carry the meet of their sources' labels, verified rather than assumed; (3) expiry that is actually enforced at retrieval and in storage (Memora shows agents reuse invalidated memories); (4) policy-aware eviction and compression that weights sensitivity and purpose; (5) evaluation of whether per-tool views reduce extraction yield under SPORE, MINJA, and MEXTRA; (6) a multi-session, multi-app on-device benchmark.
+
+\section{Threat Model or Privacy Model}
+\textbf{Trusted}: system\_server, the MemScope service, the AppSearch-derived store, Knox/StrongBox-class key storage where available. \textbf{Untrusted}: the agent model and its prompts (may be injected); third-party tools and AppFunctions providers; other apps; a cloud memory backend if used. \textbf{Attacker}: (a) a malicious tool that persists extraction instructions (SPORE), (b) a query-only adversary interacting through the assistant (MEXTRA, MINJA), (c) a benign but over-sharing agent (ToolPrivacyBench), (d) a user-presence adversary who later queries a different purpose context. \textbf{Assets}: memory items and what can be inferred from them. \textbf{Goal}: an item is returned to a consumer only if the consumer's (app, tool, purpose) is within the item's scope and the item has not expired; derived items are at least as restricted as their sources; an adversary in one scope cannot retrieve items of another scope through any tool.
+
+\section{Core Idea}
+Memory items become \emph{labeled documents} in a system-owned store: each carries provenance (source app, source AppFunction or channel, acquisition time), a purpose set, a consumer set (agents, apps, tools), a sensitivity class, and a lifetime. Agents and tools never query the store directly; they present a \emph{retrieval token} issued per task that names the task's purpose and the tools in play (reusing IntentGuard-style task tokens where available, otherwise derived from the AppFunction being executed). The monitor filters candidates before ranking, so the model never sees out-of-scope items. Writes go through a labeling step: user-stated facts get labels from the task token; items derived by the agent (summaries, reflections) are labeled with the meet of their inputs, and the service verifies the derivation by checking that the derived text is attributable to the cited inputs (a cheap entailment or overlap test) before accepting the label. Expiry is enforced at read and by background compaction; eviction under memory pressure is policy-aware (high-sensitivity and safety-critical items are retained preferentially). Keys for compartments are held in hardware-backed storage so a stolen database is not readable without the OS.
+
+\section{Preliminary System Architecture}
+\begin{itemize}
+  \item \textbf{Scoped Store} (Android OS modification extending AppSearch PlatformStorage): per-document labels, per-compartment keys, TTL enforcement, policy-aware eviction.
+  \item \textbf{Retrieval Monitor} (system service): validates retrieval tokens, filters candidates, logs accesses.
+  \item \textbf{Label Propagator} (system service with SLM integration): labels writes, verifies derived-item attribution, computes label meets.
+  \item \textbf{Token Issuer} (integration with AppFunctions execution context and, optionally, IntentGuard task tokens).
+  \item \textbf{Agent SDK} (application modification): replaces direct vector-store calls (Mem0/Letta/MobiMem style) with store API calls.
+  \item \textbf{Hardware}: hardware-backed keys (StrongBox/Knox Vault) for compartments; otherwise none.
+\end{itemize}
+
+\section{Novelty Boundary}
+\textbf{What is fundamentally new}: an OS-enforced, multi-dimensional scope on a persistent device memory store read by LLM agents, with verified label propagation through derivation and with policy-aware eviction, measured on phones. Audience-Bound Persistent Memory labels one dimension (audience) in a synthetic setting; MNC scopes messages between agents; GAAP tracks flows but not long-term memory; AppSearch scopes by caller and schema type only. \textbf{What would not exist otherwise}: a platform memory service that third-party agents on Android could adopt instead of private vector stores, and the first evidence of how much scoping reduces extraction yield under published attacks. Novelty requires further literature verification: this area produced two directly relevant preprints in the two months before this sweep, so a fresh check is mandatory before submission.
+
+\section{Expected Contributions}
+\begin{enumerate}
+  \item A labeled-memory abstraction (provenance, purpose, consumer, sensitivity, lifetime) and a retrieval-token protocol tied to AppFunctions execution.
+  \item Verified label propagation for LLM-derived items.
+  \item Policy-aware eviction and enforced expiry on a resource-constrained store.
+  \item An on-device implementation extending AppSearch, with latency, storage, and energy measurements against MobiMem's 23.8 ms retrieval baseline.
+  \item An attack evaluation (SPORE, MINJA, MEXTRA, ADAM, MemPoison) and a utility evaluation (LoCoMo, LongMemEval, Memora) with and without scoping, plus a new multi-app on-device benchmark.
+\end{enumerate}
+
+\section{Evaluation Plan}
+\begin{itemize}
+  \item \textbf{Platform}: AOSP on Pixel 8/9 and a Samsung device for Knox-backed keys; Gemma 3n or Qwen 0.5B-class on-device model for labeling; cloud model as the agent.
+  \item \textbf{Workloads}: multi-session personal assistant tasks across messaging, calendar, health, shopping, built from ProfileFoundry synthetic profiles and PersonaChat; MemGUI-Bench for GUI agent memory.
+  \item \textbf{Attacks}: SPORE tool-channel persistence; MINJA and MEXTRA query-only extraction; ADAM adaptive extraction; MemPoison triggers.
+  \item \textbf{Baselines}: Mem0 and Letta scoping by user/agent/run id; AppSearch schema-type visibility; GAAP-style IFC without memory labels; prompt-level privacy instructions.
+  \item \textbf{Metrics}: out-of-scope retrieval rate, extraction yield per attack, utility (recall@k, answer accuracy on LoCoMo/LongMemEval), safety-critical fact survival under compression (PA-Bench protocol), retrieval latency, storage and energy overhead, label error rate.
+  \item \textbf{Ablations}: each label dimension; derived-item verification on/off; policy-aware eviction on/off.
+\end{itemize}
+
+\section{Feasibility}
+Medium-high. AppSearch is a Mainline module with public visibility APIs; extending it with per-document labels and TTL in an AOSP build is tractable. Label inference from an SLM is imperfect (MemPrivacy reports about 86\% F1 for sensitive spans), so the design relies on fail-closed defaults from the task token rather than on the SLM alone. Effort: two engineers, four to five months.
+
+\section{Potential Risks}
+\begin{itemize}
+  \item Concurrent work: Audience-Bound Persistent Memory and MNC will be cited; must differentiate on dimensions, persistence, and on-device enforcement.
+  \item Policy specification burden (standard contextual-integrity critique); mitigated by deriving defaults from AppFunction metadata and app category.
+  \item Derived-item leakage: summaries may encode out-of-scope facts despite labels; need the inference-leakage experiment (DP-MemView style).
+  \item Utility collapse if scopes are too narrow; report Pareto curves.
+  \item Reviewers may see this as ACLs on a database; the answer is label propagation through LLM derivation and tool-scoped retrieval under attack.
+\end{itemize}
+
+\section{Killer Experiment}
+Run SPORE's malicious-tool persistence attack and MINJA against an agent using Mem0-style memory on a phone, then against the same agent with MemScope per-tool retrieval tokens and labeled items, measuring record extraction yield and LoCoMo accuracy. If extraction drops from the published 80\% range to single digits with under three points of accuracy loss and retrieval latency under 50 ms, the paper is viable. If scoping does not reduce extraction because the attack succeeds within a single scope, the design must add derivation verification before anything else.
+
+\section{Publication Readiness}
+\begin{itemize}
+  \item ACM MobiSys: 7/10. On-device service with measurements; fits the agents and personal AI session; novelty risk from concurrent preprints.
+  \item ACM MobiCom: 6/10.
+  \item ACM SenSys: 2/10.
+  \item IEEE S\&P: 5/10. Needs formal property and broader attacks.
+  \item USENIX Security: 6/10. Attack evaluation is a strength.
+  \item ACM CCS: 6/10. Access-control model for LLM-derived data.
+  \item NDSS: 5/10.
+  \item PETS/PoPETs: 7/10. Purpose limitation and contextual integrity fit well.
+\end{itemize}
+
+\end{document}

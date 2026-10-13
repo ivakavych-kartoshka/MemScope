@@ -1,0 +1,116 @@
+\documentclass[preprint,12pt,authoryear]{elsarticle}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs,multirow,array,tabularx,longtable}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,shapes.geometric,shapes.symbols,decorations.pathreplacing,patterns,matrix,shadows.blur}
+\pgfplotsset{compat=1.18}
+
+\definecolor{msblue}{HTML}{2563A6}
+\definecolor{msorange}{HTML}{D86B28}
+\definecolor{msgreen}{HTML}{368A55}
+\definecolor{mspurple}{HTML}{6B58A6}
+\definecolor{msgray}{HTML}{667085}
+\definecolor{mslight}{HTML}{F4F6F8}
+\hypersetup{colorlinks=true,linkcolor=msblue,citecolor=msgreen,urlcolor=mspurple}
+\setlength{\emergencystretch}{2em}
+\journal{Journal of Systems Architecture}
+\makeatletter
+\providecommand{\theHALG@line}{\thealgorithm.\arabic{ALG@line}}
+\makeatother
+
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\Pset}{\mathcal{P}}
+\newcommand{\Cset}{\mathcal{C}}
+\newcommand{\Aset}{\mathcal{A}}
+\newcommand{\Tset}{\mathcal{T}}
+\newcommand{\DAG}{\mathcal{G}}
+\newcommand{\Auth}{\mathsf{Auth}}
+\newcommand{\View}{\mathsf{View}}
+\newcommand{\Meet}{\mathsf{meet}}
+\newcommand{\Expired}{\mathsf{Expired}}
+\newcommand{\ms}{\textsc{MemScope}}
+\newcommand{\placeholder}{\textcolor{msorange}{\textbf{Placeholder / expected trend only; replace with actual experimental results before submission.}}}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{MemScope: A Purpose-Bound Memory Service for Mobile Personal Agents}
+
+\author[inst1]{Anonymous Author(s)}
+\affiliation[inst1]{organization={Institution withheld for review},city={Anonymous},country={Anonymous}}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\begin{keyword}
+mobile personal agents \sep purpose-bound memory \sep Android \sep persistent memory \sep provenance \sep reference monitor \sep AppSearch \sep label propagation \sep expiry \sep policy-aware eviction
+\end{keyword}
+
+\end{frontmatter}
+
+\begin{highlights}
+\item MemScope moves persistent personal-agent memory behind an Android reference monitor.
+\item Item labels bind provenance, purpose, consumers, app/tool context, sensitivity, and lifetime.
+\item Derived summaries conservatively inherit the meet of their cited sources' authorizations.
+\item Formal results cover admission soundness and expiry, not unrestricted semantic non-inference.
+\item A phone-based protocol separates pending measurements from conceptual expected trends.
+\end{highlights}
+
+\input{figures/tikz_styles}
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/preliminaries}
+\input{sections/system_model}
+\input{sections/threat_model}
+\input{sections/problem_formulation}
+\input{sections/methodology}
+\input{sections/algorithm}
+\input{sections/theory}
+\input{sections/implementation}
+\input{sections/experiments}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\appendix
+\input{appendix/proofs}
+\input{appendix/additional_experiments}
+\input{appendix/policy_examples}
+\input{appendix/reproducibility}
+
+\section*{Declaration of competing interest}
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this manuscript.
+
+\section*{Data and code availability}
+The current artifact contains a design, formal model, and preregistered evaluation protocol. No completed experimental measurements are claimed. Implementation, workload generators, policies, raw traces, and analysis scripts must be released or archived before submission; see the reproducibility appendix and \texttt{TODO\_before\_submission.md}.
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{references_verified}
+
+\end{document}

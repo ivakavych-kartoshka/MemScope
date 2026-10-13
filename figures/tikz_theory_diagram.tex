@@ -1,0 +1,35 @@
+\begin{figure*}[t]
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[node distance=7mm and 13mm]
+  \node[infra, text width=30mm] (a1) {A1: authentic tokens\\and correct identity};
+  \node[infra, below=of a1, text width=30mm] (a2) {A2: complete mediation\\and atomic snapshot};
+  \node[infra, below=of a2, text width=30mm] (a3) {A3: label/provenance\\integrity and trusted time};
+
+  \node[theory, right=18mm of a1, text width=31mm] (l1) {Lemma 1\\label-meet monotonicity};
+  \node[theory, below=12mm of l1, text width=31mm] (l2) {Lemma 2\\composition principal};
+  \node[theory, below=12mm of l2, text width=31mm] (l3) {Lemma 3\\authorized view is sound};
+
+  \node[defense, right=20mm of l1, text width=34mm] (t1) {Theorem 1\\admission soundness};
+  \node[defense, below=12mm of t1, text width=34mm] (t2) {Theorem 2\\derived-label safety};
+  \node[defense, below=12mm of t2, text width=34mm] (t3) {Theorem 3\\cross-scope returned-plaintext safety};
+
+  \node[honest, right=18mm of t2, text width=32mm] (c1) {Design consequences\\pre-ranking filter, fail-closed derivation, read-time TTL};
+
+  \draw[depflow] (a1.east)--(l1.west);
+  \draw[depflow] (a1.east) -| ($(l2.west)+(-5mm,0)$) -- (l2.west);
+  \draw[depflow] (a2.east)--(l2.west);
+  \draw[depflow] (a3.east) -| ($(l3.west)+(-5mm,0)$) -- (l3.west);
+  \draw[depflow] (l3.east)--(t1.west);
+  \draw[depflow] (l1.east) -| ($(t2.west)+(-5mm,0)$) -- (t2.west);
+  \draw[depflow] (l2.east) -| ($(t2.west)+(-9mm,0)$) -- (t2.west);
+  \draw[depflow] (t1.south) -- (t2.north);
+  \draw[depflow] (t2.south) -- (t3.north);
+  \draw[depflow] (t1.east) -| ($(c1.west)+(-5mm,0)$) -- (c1.west);
+  \draw[depflow] (t2.east)--(c1.west);
+  \draw[depflow] (t3.east) -| ($(c1.west)+(-5mm,0)$) -- (c1.west);
+\end{tikzpicture}
+}
+\caption{Proof dependency map. The routed edges emphasize that interface guarantees depend on explicit trusted-system assumptions; they are not claims about arbitrary model behavior.}
+\label{fig:theory-deps}
+\end{figure*}

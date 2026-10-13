@@ -1,0 +1,32 @@
+\begin{figure*}[t]
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[node distance=8mm and 7mm]
+  \node[stage] (s1) {1};
+  \node[honest, right=2mm of s1, text width=24mm] (intent) {Bind task intent\\and principals};
+  \node[stage, right=7mm of intent] (s2) {2};
+  \node[defense, right=2mm of s2, text width=24mm] (token) {Issue short-lived\\retrieval token};
+  \node[stage, right=7mm of token] (s3) {3};
+  \node[defense, right=2mm of s3, text width=24mm] (filter) {Filter labels\\$\Auth(m,q)$};
+  \node[stage, right=7mm of filter] (s4) {4};
+  \node[honest, right=2mm of s4, text width=23mm] (rank) {Rank authorized\\candidate view};
+
+  \node[stage, below=14mm of s4] (s5) {5};
+  \node[honest, left=2mm of s5, text width=23mm] (use) {Use evidence in\\agent/tool call};
+  \node[stage, left=7mm of use] (s6) {6};
+  \node[theory, left=2mm of s6, text width=25mm] (derive) {Cite sources and\\compute $\Meet(S)$};
+  \node[stage, left=7mm of derive] (s7) {7};
+  \node[defense, left=2mm of s7, text width=24mm] (verify) {Verify attribution;\\admit or quarantine};
+  \node[stage, left=7mm of verify] (s8) {8};
+  \node[infra, left=2mm of s8, text width=23mm] (compact) {Expire, audit,\\compact, evict};
+
+  \draw[dataflow] (intent.east)--(s2.west); \draw[policyflow] (token.east)--(s3.west);
+  \draw[policyflow] (filter.east)--(s4.west); \draw[dataflow] (rank.south) |- (use.east);
+  \draw[dataflow] (use.west)--(s6.east); \draw[depflow] (derive.west)--(s7.east);
+  \draw[policyflow] (verify.west)--(s8.east);
+  \draw[controlflow] (compact.north west) to[out=160,in=200,looseness=.9] node[labelback, below]{next task} (intent.south west);
+\end{tikzpicture}
+}
+\caption{MemScope read--derive--maintain pipeline. Numbering fixes the security-critical order: authorization occurs before ranking, and derivation checks occur before a generated item becomes retrievable.}
+\label{fig:pipeline}
+\end{figure*}

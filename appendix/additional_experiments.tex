@@ -1,0 +1,61 @@
+\section{Detailed experimental protocol}
+\label{app:experiments}
+
+\subsection{Episode construction}
+
+Each synthetic person is assigned 30--180 days of events. Sources include messaging, calendar, health, shopping, travel, and system settings. Every atomic fact has a stable ID, source timestamp, source app/tool, sensitivity, lifetime, authorized purpose/consumer set, and update chain. Natural-language renderers produce multiple paraphrases while preserving the structured oracle. A held-out auditor verifies referential consistency and policy labels before an episode enters the benchmark.
+
+Tasks are sampled in four groups: single-app recall; authorized cross-app composition; unauthorized cross-purpose probes; and temporal update/expiry. Compound tasks are decomposed into token sequences, enabling measurement of whether agents request unnecessarily broad views. The same structured episode generates benign and adversarial variants so paired comparisons differ only in attack content.
+
+\subsection{Attack adaptation rules}
+
+For every published attack, the artifact record states original threat model, attacker access, target memory architecture, attack budget, and success definition. Adaptation to MemScope may change only the connector necessary to call the same logical agent interface. The attack does not receive extra knowledge of labels unless that knowledge is part of an explicit white-box track. Results are reported as reproduction, partial reproduction, or reimplementation.
+
+MEXTRA and ADAM run from a query-only consumer scope. SPORE registers a tool with one legitimate purpose and attempts to extract items outside that purpose; a second within-scope condition tests the admitted limitation. MINJA and MemPoison submit candidate content through normal interactions; success is separated into record admission, later retrieval, and behavioral effect. An always-allow store establishes attack viability, and a no-memory agent checks whether the measured disclosure truly comes from memory.
+
+\subsection{Policy annotation reliability}
+
+Two annotators independently label a stratified subset of purpose, consumer, lifetime, and sensitivity dimensions using a written handbook. Agreement is reported per dimension with raw agreement and an appropriate chance-corrected statistic. Disagreements are adjudicated without inspecting system outputs. The remaining synthetic corpus can inherit deterministic labels from the generator, but natural-language tasks still receive a leakage audit.
+
+\subsection{Microbenchmarks}
+
+Microbenchmarks measure cold and warm token verification, exact label checks, indexed projections, encryption/decryption by payload size, audit append, derivation meet by parent count, attribution-verifier latency, tombstone writes, compaction, and key rotation. Store sizes grow geometrically. Measurements distinguish cache-cold reboot, process-cold, and steady-state conditions.
+
+The MobiMem-reported retrieval latency is contextual evidence, not a directly comparable baseline unless code, device, model, index size, and metric definition are reproduced \citep{liu2025mobimem}. MemScope will report its own distributions and only compare under a matched harness.
+
+\subsection{End-to-end tasks}
+
+End-to-end experiments replay full agent trajectories with identical model prompts except for the memory adapter. The harness records token requests, authorized candidate counts, selected items, tool arguments, final answer, policy violations, latency breakdown, energy window, and model usage. A blinded evaluator scores answer correctness where deterministic metrics are unavailable. Tool arguments are checked atom-by-atom against purpose-specific need-to-know policy, following ToolPrivacyBench's trajectory-level motivation \citep{hu2026toolprivacy}.
+
+\subsection{Eviction experiment}
+
+At fixed byte budgets (5, 10, 20, 40, 80, and 100\% of uncompressed store size), compare least-recently used, semantic-relevance, learned importance, safety-first, sensitivity-delete-first, and MemScope's policy-aware heuristic. Future questions remain hidden at eviction time. Outcomes are entitled QA accuracy, safety-critical survival, invalidated-fact retention, sensitive byte-days, and compaction energy. Exact knapsack on small instances estimates the heuristic gap without claiming that the objective perfectly represents user welfare.
+
+\subsection{Derivation corpus}
+
+Construct source groups with: faithful extractive summaries; faithful abstractions; unsupported additions; contradictions; cross-scope combinations; omitted sensitive qualifiers; expired parents; stale parent versions; and empty label intersections. Human annotation identifies support at claim/span level. Compare lexical overlap, small local NLI, larger local/cloud NLI, and structured-only transforms. Report false acceptance separately for high-sensitivity and ordinary classes.
+
+\subsection{Planned experiment matrix}
+
+\begin{longtable}{p{.17\textwidth}p{.19\textwidth}p{.20\textwidth}p{.26\textwidth}}
+\caption{Planned evaluation matrix. Every cell is pending implementation.}\label{tab:experiment-matrix}\\
+\toprule
+Question & Independent variables & Primary metrics & Required controls \\
+\midrule
+\endfirsthead
+\toprule
+Question & Independent variables & Primary metrics & Required controls \\
+\midrule
+\endhead
+RQ1 enforcement & attack, baseline, scope width, tool trust & violations, extraction yield, attack cost & always-allow, no-memory, matched ranker/model \\
+RQ2 utility & benchmark, scope width, $k$, token decomposition & entitled recall, answer accuracy, abstention & policy-equivalent oracle, unscoped ceiling \\
+RQ3 derivation & verifier, transform, sensitivity, parents & false widening, attribution FAR/FRR, quarantine & deterministic meet, always-accept/reject \\
+RQ4 lifecycle & TTL, revocation timing, reboot, race & post-expiry releases, stale reuse, deletion lag & clock rollback and shadow-cache negatives \\
+RQ5 mobile cost & device, store size, verifier, cold/warm & p50/p95/p99 latency, energy, storage & identical AOSP build and thermal protocol \\
+RQ6 retention & budget, policy mix, eviction method & safety survival, FAMA, byte-days, energy & future-blind queries, exact small oracle \\
+\bottomrule
+\end{longtable}
+
+\subsection{Result-release policy}
+
+The final paper will not replace ``pending'' with a single best run. A machine-readable manifest links each table cell and plot series to raw trace hashes and analysis code. Failed hypotheses remain reported. Any change to primary metrics, exclusion rules, attacks, or baselines after seeing results is disclosed as exploratory.

@@ -1,0 +1,43 @@
+\section{Problem formulation}
+\label{sec:problem}
+
+\subsection{Safety and utility objectives}
+
+Let $Q$ be a workload of authenticated task contexts and $G(q)\subseteq\M$ the policy ground-truth items entitled and relevant to task $q$. Let $O(q)$ be the items returned by the store. Authorization violations and misses are
+\begin{align}
+V(Q)&=\sum_{q\in Q}\sum_{m\in O(q)}\mathbf{1}[\neg\Auth(m,q)],\\
+L(Q)&=\sum_{q\in Q}|G(q)\setminus O(q)|.
+\end{align}
+The safety constraint is $V(Q)=0$ for service-mediated reads under the model. Utility seeks to reduce $L(Q)$, answer error, latency, energy, and storage subject to safety and device budgets.
+
+Because relevance and authorization are different predicates, maximizing conventional recall over all historically relevant items is incorrect. We report \emph{entitled recall}
+\begin{equation}
+\mathsf{ER@}k=\frac{1}{|Q^{+}|}\sum_{q\in Q^{+}}\frac{|O_k(q)\cap G(q)|}{|G(q)|},
+\label{eq:er}
+\end{equation}
+where $Q^{+}=\{q\in Q: G(q)\ne\emptyset\}$ is the set of queries with nonempty entitled ground truth, alongside out-of-scope retrieval rate. The convention is frozen: queries with $G(q)=\emptyset$ contribute to no denominator and are excluded from the reported mean, a choice that depends only on the method-independent ground truth and not on any method's output, so $\mathsf{ER@}k$ stays comparable across methods evaluated on the identical query set. Reported results also state $|Q^{+}|$ and the number of excluded queries $|Q\setminus Q^{+}|$. A method cannot trade a nonzero violation rate for better entitled recall and still satisfy the principal security property.
+
+\subsection{Derived-item safety}
+
+Let $\DAG=(\I,E)$ be the derivation DAG, where $(j,i)\in E$ means item $i$ cites item $j$ as a source. For parent set $\mathrm{pa}(i)$, a derived item is policy-valid when
+\begin{equation}
+\ell_i\preceq\Meet(\mathrm{pa}(i))
+\quad\wedge\quad
+\mathsf{Attributed}(x_i,\{x_j:j\in\mathrm{pa}(i)\}).
+\label{eq:derived-validity}
+\end{equation}
+The first conjunct is deterministic. The second is necessarily approximate for natural-language derivations. MemScope treats a false acceptance by the attribution checker as an integrity risk, not as evidence that a broader label is safe. A deployment can require extractive summaries or user confirmation for high-sensitivity classes.
+
+\subsection{Storage-budget objective}
+
+Let $w_i$ be item size and $y_i\in\{0,1\}$ indicate retention after compaction. For unexpired, policy-retainable items, define estimated future utility $u_i$, safety value $r_i$, sensitivity cost $d_i$, staleness $g_i$, and recomputation cost $c_i$. The planner solves or approximates
+\begin{align}
+\max_{\bm y}\quad &\sum_i y_i(\alpha u_i+\beta r_i+\gamma c_i-\delta d_i-\eta g_i)\\
+\text{s.t.}\quad &\sum_i y_iw_i\le B,\quad y_i=0\text{ if }\tau\ge e_i,
+\label{eq:eviction}
+\end{align}
+with policy-pinned items handled as hard constraints only when their total size fits $B$. If hard constraints exceed the budget, the service raises an explicit resource fault rather than silently discarding safety-critical records. The objective affects retention, never authorization.
+
+\subsection{Design requirements}
+
+The formulation yields seven requirements: (R1) authenticated principal and purpose binding; (R2) per-document enforcement before ranking; (R3) conservative derivation; (R4) retrieval-time expiry; (R5) atomic policy/version checks; (R6) auditable lifecycle transitions; and (R7) bounded mobile overhead. The next sections instantiate these requirements.

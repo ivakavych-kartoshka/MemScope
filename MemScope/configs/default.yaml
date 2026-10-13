@@ -1,0 +1,18 @@
+run:
+  mode: synthetic
+  seed: 7
+data:
+  name: multi_app
+  root: examples/synthetic_data
+retrieval:
+  k: 3
+output:
+  root: outputs/default
+compaction:
+  byte_budget: 4096
+  weights:
+    alpha: 1.0
+    beta: 2.0
+    gamma: 0.5
+    delta: 0.5
+    eta: 0.5

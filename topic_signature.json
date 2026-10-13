@@ -1,0 +1,69 @@
+{
+  "source": "idea.pdf",
+  "locked_title": "MemScope: A Purpose-Bound Memory Service for Mobile Personal Agents",
+  "required_core_terms": [
+    "MemScope",
+    "purpose-bound memory",
+    "mobile personal agents",
+    "Android",
+    "persistent memory",
+    "provenance",
+    "lifetime",
+    "app and tool scope",
+    "retrieval token",
+    "reference monitor",
+    "derived-memory label propagation",
+    "policy-aware eviction"
+  ],
+  "required_equations": [
+    "memory item tuple with payload, provenance, purpose set, consumer set, sensitivity, creation time, and expiry",
+    "authorization predicate over item label and authenticated retrieval context",
+    "derived-label meet/intersection over cited source items",
+    "authorized candidate view formed before ranking",
+    "expiry predicate evaluated against trusted monotonic time",
+    "policy-aware eviction score under a storage budget"
+  ],
+  "required_algorithm_names": [
+    "MemScope retrieval",
+    "MemScope derived-memory admission",
+    "MemScope policy-aware compaction"
+  ],
+  "required_theorem_directions": [
+    "admission soundness under authentic tokens and complete mediation",
+    "derived-label monotonicity under meet propagation",
+    "cross-scope non-disclosure of returned plaintext under stated assumptions",
+    "retrieval-time expiry safety",
+    "time and storage complexity bounds"
+  ],
+  "required_experiment_variables": [
+    "out-of-scope retrieval rate",
+    "attack extraction yield",
+    "Recall@k",
+    "answer accuracy",
+    "safety-critical fact survival",
+    "retrieval latency",
+    "storage overhead",
+    "energy overhead",
+    "label error rate",
+    "scope width",
+    "memory pressure",
+    "derived-item verification"
+  ],
+  "required_baselines": [
+    "unscoped agent memory",
+    "Mem0 or Letta namespace scoping",
+    "Android AppSearch schema-type visibility",
+    "prompt-only privacy instructions",
+    "GAAP-style information-flow control without MemScope labels"
+  ],
+  "forbidden_topic_drifts": [
+    "federated learning",
+    "over-the-air aggregation",
+    "mechanism design",
+    "blockchain",
+    "cloud-only RAG architecture",
+    "new foundation-model training",
+    "differential privacy as the central method",
+    "generic multi-agent orchestration"
+  ]
+}
